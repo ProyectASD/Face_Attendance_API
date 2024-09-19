@@ -15,7 +15,7 @@ import {
     actualizarEstudiante,
     eliminarEstudiante
 } from "../controllers/docente_controller.js"
-import autenticar from "../middlewares/autenticacion.js"
+import autenticarDocente from "../middlewares/autenticacionDocente.js"
 //import autenticarDocente from "../middlewares/autenticacionDocente.js"
 
 //Rutas publicas
@@ -28,13 +28,13 @@ router.post("/nueva-password/:token", nuevaPasswordDocente)
 
 
 //Rutas privadas
-router.put("/modificar-perfil/:id", autenticar, modificarPerfilDocente)
+router.put("/modificar-perfil/:id", autenticarDocente, modificarPerfilDocente)
 
-router.post("/crear/estudiante", autenticar , crearEstudiante)
-router.get("/visualizar/estudiantes", autenticar , visualizarEstudiantes)
-router.get("/visualizar/estudiante/:id", autenticar, visualizarEstudiante)
-router.put("/actualizar/estudiante/:id", autenticar, actualizarEstudiante)
-router.delete("/eliminar/estudiante/:id", autenticar, eliminarEstudiante)
+router.post("/crear/estudiante", autenticarDocente , crearEstudiante)
+router.get("/visualizar/estudiantes", autenticarDocente , visualizarEstudiantes)
+router.get("/visualizar/estudiante/:id", autenticarDocente, visualizarEstudiante)
+router.put("/actualizar/estudiante/:id", autenticarDocente, actualizarEstudiante)
+router.delete("/eliminar/estudiante/:id", autenticarDocente, eliminarEstudiante)
 
 
 

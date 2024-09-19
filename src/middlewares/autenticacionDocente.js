@@ -12,7 +12,7 @@ const autenticar = async(req, res, next)=>{
         if(rol === "docente"){
             req.docente = await Docentes.findById(id).lean()
             next()
-        }else{
+        } else{
             return res.status(403).json({msg: "Lo sentimos pero no puede acceder a esta ruta"})
         }
     } catch (error) {

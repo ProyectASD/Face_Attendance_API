@@ -1,5 +1,4 @@
 import  jwt  from "jsonwebtoken"
-import Docentes from "../models/docentes.js"
 import Estudiantes from "../models/estudiantes.js"
 
 const autenticar = async(req, res, next)=>{
@@ -10,12 +9,11 @@ const autenticar = async(req, res, next)=>{
     const {authorization} = req.headers
     try {
         const {id, rol} = jwt.verify(authorization.split(" ")[1], process.env.JWT_SECRET)
-        if(rol === "docente"){
-            req.docente = await Docentes.findById(id).lean()
-            next()
-        } else if(rol === "estudiante"){
+        if(rol === "estudiante"){
             req.estudiante = await Estudiantes.findById(id).lean()
             next()
+        }else{
+            return res.status(403).json({msg: "Lo sentimos pero no puede acceder a esta ruta"})
         }
     } catch (error) {
         const e = new Error("Error al confirmar token")

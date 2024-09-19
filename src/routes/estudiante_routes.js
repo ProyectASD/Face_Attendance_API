@@ -9,7 +9,7 @@ import {
     nuevaPasswordEstudiante, 
     recuperarPasswordEstudiante, 
     registroEstudiante } from "../controllers/estudiante_controller.js"
-import autenticar from "../middlewares/autenticacion.js"
+import autenticarEstudiante from "../middlewares/autenticacionEstudiante.js"
 
 
 //Rutas publicas
@@ -22,7 +22,7 @@ router.post("/nueva-password/:token", nuevaPasswordEstudiante)
 
 
 //Rutas privadas
-router.put("/modificar-perfil/:id", autenticar, modificarPerfilEstudiante)
+router.put("/modificar-perfil/:id", autenticarEstudiante, modificarPerfilEstudiante)
 
 
 export default router

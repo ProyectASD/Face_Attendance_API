@@ -1,7 +1,63 @@
-// //import Cursos from "../models/cursos.js"
-// import Asistencias from "../models/asistencias.js"
+import Asistencia from "../models/asistencias.js"
+import mongoose from "mongoose"
+//Gestionar asistencias
 
-// import mongoose from "mongoose"
+//Crear asistencia
+const crearAsistencia = async(req, res)=>{
+    const {estudiante} = req.body
+    try {
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        const asistenciaEncontrada = await Asistencia.findOne({estudiante})
+        if(asistenciaEncontrada) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+
+
+        res.status(200).json({msg: "crear sistencia"})
+        
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Visualizar asistencias
+const visualizarAsistencias = async(req, res)=>{
+    try {
+        res.status(200).json({msg: "visualizar asistencias"})
+        
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Visualizar asistencia
+const visualizarAsistencia = async(req, res)=>{
+    try {
+        res.status(200).json({msg: "visualizar una asistencia"})
+        
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Actualizar asistencia
+const actualizarAsistencia = async(req, res)=>{
+    try {
+        res.status(200).json({msg: "actualizar asistencia"})
+        
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Eliminar asistencia
+const eliminarAsistencia = async(req, res)=>{
+    try {
+        res.status(200).json({msg: "eliminar asistencia"})
+        
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
 
 // //Gestionar cursos
 //     //Crear curso
@@ -84,3 +140,4 @@
 //     actualizarCurso,
 //     eliminarCurso
 // }
+

@@ -225,7 +225,7 @@ const eliminarEstudiante = async(req, res) =>{
 
 
 
-//Gestionar asistencias
+
 
 
 

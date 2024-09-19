@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose"
+import mongoose, { model, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
 const estudianteSchema = new Schema({
     nombre: {
@@ -62,6 +62,10 @@ const estudianteSchema = new Schema({
     confirmEmail: {
         type: Boolean,
         default: false
+    }, 
+    curso: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cursos"
     }
 },{
     timestamps: true
