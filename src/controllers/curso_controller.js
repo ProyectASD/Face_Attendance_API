@@ -11,9 +11,10 @@ import mongoose from "mongoose"
             if(cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero el curso ya se encuentra registrado"})
     
             const nuevoCurso = new Cursos(req.body)
+            nuevoCurso.docente = req.docente._id
             await nuevoCurso.save()
     
-            res.status(200).json({msg: "Curso creado con éxito"})
+            res.status(200).json({msg: "Curso creado con éxito", codigo: codigo})
         } catch (error) {
             res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
         }

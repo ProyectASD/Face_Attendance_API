@@ -4,6 +4,8 @@ import cors from "cors"
 import routerDocente from "./routes/docente_routes.js"
 import routerEstudiante from "./routes/estudiante_routes.js"
 import routerCurso from "./routes/curso_routes.js"
+import routerAsistencia from "./routes/asistencia_routes.js"
+import routerActuacion from "./routes/actuacion_routes.js"
 
 //Inicializaciones
 const app = express()
@@ -20,7 +22,8 @@ app.use(express.json())
 app.use("/api/docente", routerDocente)
 app.use("/api/estudiante", routerEstudiante)
 app.use("/api/curso", routerCurso)
-
+app.use("/api/asistencia", routerAsistencia)
+app.use("/api/actuacion", routerActuacion)
 
 //Ruta no encontrada
 app.use((req,res)=>{res.status(404).send("Endpoint no encontrado - 404")})

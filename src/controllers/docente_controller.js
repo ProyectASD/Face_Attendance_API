@@ -194,7 +194,6 @@ const visualizarEstudiante = async(req, res) =>{
 }
 
     //Actualizar estudiante
-
 const actualizarEstudiante = async(req, res) =>{
     const {id} = req.params
     try {
@@ -223,6 +222,26 @@ const eliminarEstudiante = async(req, res) =>{
     }
 }
 
+
+//Gestionar datos personales estudiantes
+
+//- En veremos
+    //Actualizar datos personales - patch
+// const actualizarDatosPersonalesEst = (req, res) =>{
+//     try {
+        
+//     } catch (error) {
+//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+//     }
+// }
+
+
+//Gestionar actuaciones
+    //Crear actuacion
+    //Visualizar actuaciones
+    //Visualizar actuacion
+    //Actualizar actuacion
+    //Eliminar actuacion
 
 
 

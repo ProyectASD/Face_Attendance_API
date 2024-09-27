@@ -2,8 +2,9 @@ import mongoose from "mongoose"
 import { enviarCorreoEstudiante, enviarCorreoRecuperarPasswordEstudiante } from "../config/nodemailer.js"
 import crearToken from "../helpers/crearJWT.js"
 import Estudiantes from "../models/estudiantes.js"
-
-
+import Cursos from "../models/cursos.js"
+import Asistencias from "../models/asistencias.js"
+import Actuaciones from "../models/actuaciones.js"
 
 //Registrarse
 const registroEstudiante = async(req,res)=>{
@@ -88,6 +89,21 @@ const modificarPerfilEstudiante = async(req, res) =>{
     }
 }
 
+//Visualizar perfil
+const visualizarPerfilEstudiante = async (req, res) =>{
+    delete req.estudiante.createdAt
+    delete req.estudiante.updatedAt
+    delete req.estudiante.confirmEmail
+    delete req.estudiante.token
+    delete req.estudiante.status
+    delete req.estudiante.__v
+    //delete req.estudiante._id
+    //delete req.estudiante.password
+
+    res.status(200).json(req.estudiante)
+    
+}
+
 //Recuperar password
 const recuperarPasswordEstudiante = async(req,res)=>{
     const {email} = req.body
@@ -141,7 +157,101 @@ const nuevaPasswordEstudiante = async(req,res) =>{
     }
 }
 
+//ESTUDIANTE DEBE INGRESAR UN CODIGO PARA REGISTRARASE A UN CURSO
 
+const ingresarCodigo = async(req, res)=>{
+    const {codigo} = req.body
+    try {
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        const cursoEncontrado = await Cursos.findOne({codigo: codigo})
+        if(cursoEncontrado?.codigo !== codigo) return res.status(404).json({msg: "Lo sentimos pero el código ingresado no es correcto"})
+       
+        //VALIDAR QUE YA INGRESE AL CURSO        
+        const estudianteEncontrado = cursoEncontrado?.estudiantes.some((estudiante) =>
+            estudiante._id.toString() === req.estudiante._id.toString()  
+        )
+
+        if(estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos pero ya te encuentras registrado en este curso"})
+        await cursoEncontrado?.estudiantes.push(req.estudiante._id) 
+        await cursoEncontrado.save()
+
+        //Crear asistencia para el estudiante
+        const asistenciaNueva = new Asistencias({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
+        await asistenciaNueva.save()
+        
+        //Crear actuacion para el estudiante
+        const actuacionNueva = new Actuaciones({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
+        await actuacionNueva.save()
+
+        res.status(200).json({msg: "Curso asignado con éxito"})
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+
+//Visualizar cursos asignados del estudiante
+const visualizarCurso = async(req, res) =>{
+    try {
+        const cursosEncontrado = await Cursos.find({estudiantes: req.estudiante._id})
+        if(!cursosEncontrado || cursosEncontrado.length === 0) return res.status(404).json({msg: "No se encontraron cursos"})
+
+        const informacionCursos = cursosEncontrado.map(curso =>{
+            const {codigo, paralelo, materia, docente} = curso
+            return {codigo, paralelo, materia, docente}
+        })
+        
+        res.status(200).json({
+            informacionCursos
+        })
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Visualizar  asistencias del estudiante
+const visualizarAsistencias = async(req, res)=>{
+    const {materia, paralelo} = req.body
+    try {
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        const cursoEncontrado = await Cursos.findOne({estudiantes: req.estudiante._id, materia: materia, paralelo: paralelo})
+        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos pero el curso no ha sido encontrado"})
+        
+        const asistenciasEncontradas = await Asistencias.findOne({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
+        if(!asistenciasEncontradas) return res.status(404).json({msg: "Lo sentimos pero no se han encontrado asistencias asociadas a este estudiante"})
+        const { fecha_asistencias, estado_asistencias} = asistenciasEncontradas
+        res.status(200).json({
+            fecha_asistencias, 
+            estado_asistencias
+        })
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//Visualizar del actuaciones estudiante
+const visualizarActuaciones = async(req, res) =>{
+    const {materia, paralelo} = req.body
+    try {
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        const cursoEncontrado = await Cursos.findOne({estudiantes: req.estudiante._id, materia: materia, paralelo: paralelo})
+        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos pero el curso no ha sido encontrado"})
+        
+        const actuacionesRegistradas = await Actuaciones.findOne({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
+        if(!actuacionesRegistradas) return res.status(404).json({msg: "Lo sentimos pero no se han encontrado actuaciones asociadas a este estudiante"})
+        
+        const {cantidad_actuaciones, descripciones, fecha_actuaciones} = actuacionesRegistradas
+        res.status(200).json({
+            cantidad_actuaciones, 
+            descripciones,
+            fecha_actuaciones
+        })
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
+
+//TODO: ELIMINAR CREAR REGISTRO DE ASISTENCIA Y ACTUACION
 
 export { 
     registroEstudiante,
@@ -150,5 +260,10 @@ export {
     recuperarPasswordEstudiante,
     confirmarEmailEstudiante,
     nuevaPasswordEstudiante,
-    confirmarRecuperarPassword
+    confirmarRecuperarPassword,
+    visualizarPerfilEstudiante,
+    ingresarCodigo,
+    visualizarCurso,
+    visualizarAsistencias,
+    visualizarActuaciones
 }

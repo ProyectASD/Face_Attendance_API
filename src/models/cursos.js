@@ -1,5 +1,4 @@
-import { Schema, model } from "mongoose"
-
+import mongoose, { Schema, model } from "mongoose"
 
 const cursoSchema = new Schema({
     codigo: {
@@ -14,7 +13,19 @@ const cursoSchema = new Schema({
     materia: {
         type: String,
         require: true
-    }
+    },
+    semestre: {
+        type: String, 
+        require: true
+    },
+    docente: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Docentes"
+    },
+    estudiantes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Estudiantes"
+    }]
 },{
     timestamps: true
 })

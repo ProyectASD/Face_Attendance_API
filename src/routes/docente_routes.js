@@ -16,7 +16,6 @@ import {
     eliminarEstudiante
 } from "../controllers/docente_controller.js"
 import autenticarDocente from "../middlewares/autenticacionDocente.js"
-//import autenticarDocente from "../middlewares/autenticacionDocente.js"
 
 //Rutas publicas
 router.post("/registro-docente", registroDocente)

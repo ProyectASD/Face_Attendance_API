@@ -4,11 +4,16 @@ const router = Router()
 import { 
     confirmarEmailEstudiante, 
     confirmarRecuperarPassword, 
+    ingresarCodigo, 
     loginEstudiante, 
     modificarPerfilEstudiante, 
     nuevaPasswordEstudiante, 
     recuperarPasswordEstudiante, 
-    registroEstudiante } from "../controllers/estudiante_controller.js"
+    registroEstudiante, 
+    visualizarActuaciones, 
+    visualizarAsistencias, 
+    visualizarCurso, 
+    visualizarPerfilEstudiante} from "../controllers/estudiante_controller.js"
 import autenticarEstudiante from "../middlewares/autenticacionEstudiante.js"
 
 
@@ -23,6 +28,13 @@ router.post("/nueva-password/:token", nuevaPasswordEstudiante)
 
 //Rutas privadas
 router.put("/modificar-perfil/:id", autenticarEstudiante, modificarPerfilEstudiante)
+//aqui va el de visualizar peril
+router.get("/perfil", autenticarEstudiante, visualizarPerfilEstudiante)
+router.post("/ingresar-codigo", autenticarEstudiante, ingresarCodigo)
+router.get("/visualizar-cursos",autenticarEstudiante,  visualizarCurso)
+router.post("/visualizar-asistencias",autenticarEstudiante,  visualizarAsistencias)
+router.post("/visualizar-actuaciones", autenticarEstudiante, visualizarActuaciones)
+
 
 
 export default router

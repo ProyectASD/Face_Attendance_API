@@ -13,6 +13,24 @@ const asistenciaSchema = new Schema({
     fecha_asistencias: {
         type: Array,
         require: true
+    },
+    estado_asistencias: {
+        type: Array,
+        require: true
+    },
+    curso: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cursos"
+    },
+    cantidad_presentes:{
+        type: Number,
+        require: true,
+        default: 0
+    },
+    cantidad_ausencias: {
+        type: Number,
+        require: true,
+        default: 0
     }
 },{
     timestamps: true
