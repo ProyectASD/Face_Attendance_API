@@ -30,7 +30,7 @@ router.post("/nueva-password/:token", nuevaPasswordDocente)
 router.put("/modificar-perfil/:id", autenticarDocente, modificarPerfilDocente)
 
 router.post("/crear/estudiante", autenticarDocente , crearEstudiante)
-router.get("/visualizar/estudiantes", autenticarDocente , visualizarEstudiantes)
+router.post("/visualizar/estudiantes", autenticarDocente , visualizarEstudiantes)
 router.get("/visualizar/estudiante/:id", autenticarDocente, visualizarEstudiante)
 router.put("/actualizar/estudiante/:id", autenticarDocente, actualizarEstudiante)
 router.delete("/eliminar/estudiante/:id", autenticarDocente, eliminarEstudiante)

@@ -62,10 +62,6 @@ const estudianteSchema = new Schema({
     confirmEmail: {
         type: Boolean,
         default: false
-    }, 
-    curso: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cursos"
     }
 },{
     timestamps: true

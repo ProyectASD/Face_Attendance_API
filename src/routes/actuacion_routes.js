@@ -11,6 +11,9 @@ import {
     estudiantesPresentes
  } from "../controllers/actuacion_controller.js"
 
+//autenticacion para docente 
+//listar-estudiantes y registrar son para estudiante
+
 //router.post("/registro", crearActuacion)
 router.post("/visualizar", visualizarActuaciones)
 router.post("/listar-estudiantes", estudiantesPresentes)

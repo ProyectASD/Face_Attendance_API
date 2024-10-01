@@ -3,6 +3,7 @@ import { enviarCorreo,enviarCorreoRecuperarPassword } from "../config/nodemailer
 import crearToken from "../helpers/crearJWT.js"
 import Docentes from "../models/docentes.js"
 import Estudiantes from "../models/estudiantes.js"
+import Cursos from "../models/cursos.js"
 
 //Registrarse
 const registroDocente = async(req,res)=>{
@@ -170,9 +171,15 @@ const crearEstudiante = async(req, res) =>{
     //Visualizar estudiantes
 
 const visualizarEstudiantes = async(req, res) =>{
+    const {materia, paralelo} = req.body
     try {
-        const estudiantesEncontrado = await Estudiantes.find()
-        if(estudiantesEncontrado.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron estudiantes registrados"})
+        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
+        
+        const estudiantesEncontrado = await Estudiantes.find({_id: {$in: cursoEncontrado?.estudiantes}})
+        if(estudiantesEncontrado.length === 0 || !estudiantesEncontrado) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron estudiantes registrados"})
         res.status(200).json(estudiantesEncontrado)
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -234,16 +241,6 @@ const eliminarEstudiante = async(req, res) =>{
 //         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
 //     }
 // }
-
-
-//Gestionar actuaciones
-    //Crear actuacion
-    //Visualizar actuaciones
-    //Visualizar actuacion
-    //Actualizar actuacion
-    //Eliminar actuacion
-
-
 
 
 
