@@ -16,9 +16,13 @@ import {
     visualizarPerfilEstudiante} from "../controllers/estudiante_controller.js"
 import autenticarEstudiante from "../middlewares/autenticacionEstudiante.js"
 
+import multer from "multer"
+const upload = multer()
+       
+
 
 //Rutas publicas
-router.post("/registro-estudiante", registroEstudiante)
+router.post("/registro-estudiante",upload.single("image"), registroEstudiante) //variable image del formulario 
 router.get("/confirmar/:token", confirmarEmailEstudiante)
 router.post("/login", loginEstudiante)
 router.post("/recuperar-password", recuperarPasswordEstudiante)

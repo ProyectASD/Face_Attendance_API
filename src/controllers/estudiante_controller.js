@@ -5,6 +5,7 @@ import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
 import Asistencias from "../models/asistencias.js"
 import Actuaciones from "../models/actuaciones.js"
+import cloudinary from "../config/cloudinary.js"
 
 //Registrarse
 const registroEstudiante = async(req,res)=>{
@@ -24,7 +25,18 @@ const registroEstudiante = async(req,res)=>{
         enviarCorreoEstudiante(nuevoEstudiante.email, token)
         await nuevoEstudiante?.save()
 
-        res.status(200).json({msg: "Revise su correo para verificar su cuenta"})
+        //Subir imagen a cloudinary
+        cloudinary.uploader.upload_stream({public_id: nuevoEstudiante?._id}, async(err, resultado)=>{
+            if(err) return res.status(500).send(`Hubo un problema al subir la imagen ${err.message}`)       
+            
+            const actualizarImgEstudiante = await Estudiantes.findByIdAndUpdate(nuevoEstudiante?._id,{fotografia: resultado.secure_url})
+            if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+            await actualizarImgEstudiante.save()
+
+            //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
+            res.status(200).json({msg: "Revise su correo para verificar su cuenta"})
+        }).end(req.file.buffer)
+
     } catch (error) {
        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)       
     }

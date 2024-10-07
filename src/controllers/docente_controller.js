@@ -232,15 +232,23 @@ const eliminarEstudiante = async(req, res) =>{
 
 //Gestionar datos personales estudiantes
 
-//- En veremos
+
     //Actualizar datos personales - patch
-// const actualizarDatosPersonalesEst = (req, res) =>{
-//     try {
-        
-//     } catch (error) {
-//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
-//     }
-// }
+const actualizarDatosPersonalesEst = async(req, res) =>{
+    const {id} = req.params
+    //const {direccion, ciudad, telefono} = req.body
+    try {
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        const estudianteEncontrado = await Estudiantes.findByIdAndUpdate(id, req.body)
+        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+
+        await estudianteEncontrado.save()
+        res.status(200).json({msg: "Datos del estudiante actualizados con éxito"})
+    } catch (error) {
+        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+    }
+}
 
 
 
@@ -259,5 +267,6 @@ export {
     visualizarEstudiante,
     visualizarEstudiantes,
     actualizarEstudiante,
-    eliminarEstudiante
+    eliminarEstudiante,
+    actualizarDatosPersonalesEst
 }

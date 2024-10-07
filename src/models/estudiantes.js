@@ -28,9 +28,8 @@ const estudianteSchema = new Schema({
         trim: true
     },
     fotografia: {
-        //No definido aun
-        //CAMBIAR AL TIPO DE DATO CORRECTO
-        type:Boolean,
+        type:String,
+        require: true,
         default: false
     },
     fecha_nacimiento: {
