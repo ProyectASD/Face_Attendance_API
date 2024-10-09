@@ -2,8 +2,10 @@ import Asistencia from "../models/asistencias.js"
 import mongoose from "mongoose"
 import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
+import reconocimientoFacial from "./reconocimiento_facial.js"
 //import Actuaciones from "../models/actuaciones.js"
 //Gestionar asistencias
+
 
 //Crear asistencia
 //Esto es para la IA
@@ -60,16 +62,24 @@ const visualizarAsistencia = async(req, res)=>{
 
 //Actualizar asistencia - SE SUPONE QUE AQUI VA LA IA
 const actualizarAsistencia = async(req, res)=>{
-    const {id} = req.params
+    const {materia, paralelo} = req.body
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
+        //if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        const asistenciaEncontrada = await Asistencia.findByIdAndUpdate(id, req.body)
+        //Implementación de la IA
+        ///await reconocimientoFacial(materia, paralelo)
+        //await reconocimientoFacial()
+        //EN CONSTRUCCION
+
+        const asistenciaEncontrada = await Asistencia.findAndUpdate(id, req.body)
         if(!asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos pero la asistencia no se encuentra registrada"})
+        
         await asistenciaEncontrada.save()
 
-        res.status(200).json({msg: "Asistencia actualizada con éxito"})
+
+
+        res.status(200).json({msg: "Asistencia registrada con éxito"})
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
