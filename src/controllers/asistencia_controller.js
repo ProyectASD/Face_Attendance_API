@@ -2,7 +2,7 @@ import Asistencia from "../models/asistencias.js"
 import mongoose from "mongoose"
 import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
-import reconocimientoFacial from "./reconocimiento_facial.js"
+//import reconocimientoFacial from "./reconocimiento_facial.js"
 //import Actuaciones from "../models/actuaciones.js"
 //Gestionar asistencias
 

@@ -10,7 +10,7 @@ import {
     visualizarReporte
  } from "../controllers/asistencia_controller.js"
 import autenticarDocente from "../middlewares/autenticacionDocente.js"
-import reconocimientoFacial from "../controllers/reconocimiento_facial.js"
+//import reconocimientoFacial from "../controllers/reconocimiento_facial.js"
 
 // router.post("/registro", autenticarDocente, crearAsistencia)
 router.post("/visualizar", autenticarDocente, visualizarAsistencias)
