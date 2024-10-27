@@ -1,102 +1,190 @@
-// import cv from "opencv.js"
-// import axios from "axios"
-// import path, { dirname } from "path"
-// import fs from "fs"
-// import faceapi from "face-api.js"
-// import canvas from "canvas"
-// // const tf = require('@tensorflow/tfjs-node');
-// import {fileURLToPath} from "url"
-// import Estudiante from "../models/estudiantes.js"
+// // src/controllers/faceRecognitionController.js
+// import faceapi from 'face-api.js';
+// import canvas from 'canvas';
+// import fs from 'fs';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
 
+// // Obtener el directorio actual del archivo
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
-
-// const __filename = fileURLToPath(import.meta.url)
-// const __dirname = dirname(__filename) 
-
-// const reconocimientoFacial = async(req, res) =>{
-
-// // Cargar los modelos de Face API
-// const MODELS_PATH = path.join(__dirname, 'models');
+// // Configurar el entorno de face-api.js con canvas
 // const { Canvas, Image, ImageData } = canvas;
 // faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
-// // Cargar los modelos de Face API
-// async function loadModels() {
-//     await faceapi.nets.ssdMobilenetv1.loadFromDisk(MODELS_PATH); // Para la detección de caras
-//     await faceapi.nets.faceRecognitionNet.loadFromDisk(MODELS_PATH); // Para el reconocimiento facial
-//     await faceapi.nets.faceLandmark68Net.loadFromDisk(MODELS_PATH); // Para detectar puntos faciales
-// }
+// // Ruta a los modelos de face-api.js
+// const MODEL_URL = path.join(__dirname, '../models/modelosIA'); // Asegúrate de que esta ruta sea correcta
 
-// loadModels()
+// // Cargar los modelos de face-api.js
+// const loadModels = async () => {
+//     await faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL);
+//     await faceapi.nets.faceLandmark68Net.loadFromDisk(MODEL_URL);
+//     await faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL);
+//     console.log('Modelos cargados');
+// };
 
-// try {
-//     const imageBase64 = req.body.image;
+// // Función para cargar la imagen
+// const cargarImagen = async (imagePath) => {
+//     const imageBuffer = fs.readFileSync(imagePath);
+//     const img = await canvas.loadImage(imageBuffer);
+//     return img;
+// };
 
-//     // Convertir base64 a Buffer y luego cargarlo como imagen para Face API
-//     const imgBuffer = Buffer.from(imageBase64.split(',')[1], 'base64');
-//     const img = await canvas.loadImage(imgBuffer);
+// // Función para procesar la imagen de la persona frente a la cámara
+// const reconocimientoFacial = async (req, res) => {
+//     try {
+//         const imagePath = req.file.path; // Obtener la imagen cargada desde el frontend
+//         const img = await canvas.loadImage(imagePath); // Cargar la imagen
 
-//     // Detectar caras y reconocerlas
-//     const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+//         // Dibujar la imagen en el canvas
+//         const canvasElement = canvas.createCanvas(img.width, img.height);
+//         const ctx = canvasElement.getContext('2d');
+//         ctx.drawImage(img, 0, 0);
 
-//     if (detections) {
-//         const estudiantes = await obtenerDescriptoresEstudiantes(); // Obtén los descriptores de Cloudinary
-//         const faceMatcher = new faceapi.FaceMatcher(estudiantes, 0.6);  // Umbral de similitud
-//         const bestMatch = faceMatcher.findBestMatch(detections.descriptor);
+//         // Detectar el rostro en la imagen
+//         const detecciones = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
 
-//         if (bestMatch.label !== 'unknown') {
-//             res.json({ success: true, message: `Estudiante identificado: ${bestMatch.toString()}` });
-//         } else {
-//             res.json({ success: false, message: 'Estudiante no identificado' });
+//         if (!detecciones) {
+//             return res.status(404).json({ msg: 'No se detectó ningún rostro' });
 //         }
-//     } else {
-//         res.json({ success: false, message: 'No se detectó ninguna cara' });
+
+//         // Cargar la imagen de referencia desde la carpeta "uploads"
+//         const imagenReferencia = await cargarImagen(path.join(__dirname, '../uploads/imageMIA.jpg'));
+//         const deteccionReferencia = await faceapi.detectSingleFace(imagenReferencia).withFaceLandmarks().withFaceDescriptor();
+
+//         if (!deteccionReferencia) {
+//             return res.status(404).json({ msg: 'No se encontró la imagen de referencia' });
+//         }
+
+//         console.log("Deteccion referencia",deteccionReferencia)
+
+//         // Comparar los descriptores faciales
+//         const faceMatcher = new faceapi.FaceMatcher(deteccionReferencia);
+//         const mejorCoincidencia = faceMatcher.findBestMatch(detecciones.descriptor);
+//         console.log("mejor coincidencia: ", mejorCoincidencia)
+//         // Enviar la respuesta al frontend
+//         if (mejorCoincidencia.label === 'unknown') {
+//             res.status(200).json({ msg: 'Desconocido' });
+//         } 
+        
+//         res.status(200).json({ msg: 'Persona reconocida', coincidencia: mejorCoincidencia?.toString() });
+//         console.log("si se reconocio la imagen")
+//         // Eliminar la imagen temporal después del reconocimiento
+//         fs.unlinkSync(imagePath);
+//     } catch (error) {
+//         res.status(500).json({ msg: `Hubo un problema en el servidor: ${error.message}` });
 //     }
-// } catch (error) {
-//     console.error('Error al procesar la imagen:', error);
-//     res.status(500).json({ success: false, message: 'Error en el procesamiento' });
-// }
+// };
+
+// // Inicializar los modelos al cargar el módulo
+// loadModels().catch(error => console.error('Error al cargar los modelos:', error));
+
+// export default reconocimientoFacial;
 
 
 
-// // Descargar imágenes desde Cloudinary
-// async function downloadStudentImages(estudiantes) {
-//     const imagePaths = await Promise.all(estudiantes.map(async (estudiante) => {
-//         const imageUrl = estudiante.imagenUrl;
-//         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-//         const imagePath = path.join(__dirname, 'temp', `${estudiante._id}.jpg`);
-//         fs.writeFileSync(imagePath, Buffer.from(response.data));
-//         return { id: estudiante._id, nombre: estudiante.nombre, path: imagePath };
-//     }));
-//     return imagePaths;
-// }
+
+// src/controllers/faceRecognitionController.js
+import faceapi from 'face-api.js';
+import canvas from 'canvas';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener el directorio actual del archivo
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configurar el entorno de face-api.js con canvas
+const { Canvas, Image, ImageData } = canvas;
+faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+// Ruta a los modelos de face-api.js
+const MODEL_URL = path.join(__dirname, '../models/modelosIA'); // Asegúrate de que esta ruta sea correcta
+
+// Cargar los modelos de face-api.js
+const loadModels = async () => {
+    await faceapi.nets.ssdMobilenetv1.loadFromDisk(MODEL_URL);
+    await faceapi.nets.faceLandmark68Net.loadFromDisk(MODEL_URL);
+    await faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL);
+    console.log('Modelos cargados');
+};
+
+// Función para cargar la imagen
+const cargarImagen = async (imagePath) => {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const img = await canvas.loadImage(imageBuffer);
+    return img;
+};
+
+// Función para procesar la imagen de la persona frente a la cámara
+const reconocimientoFacial = async (req, res) => {
+    try {
+        const imagePath = req.file.path; // Obtener la imagen cargada desde el frontend
+        const img = await canvas.loadImage(imagePath); // Cargar la imagen
+
+        // Dibujar la imagen en el canvas
+        const canvasElement = canvas.createCanvas(img.width, img.height);
+        const ctx = canvasElement.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        // Detectar el rostro en la imagen
+        const detecciones = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+
+        if (!detecciones) {
+            return res.status(404).json({ msg: 'No se detectó ningún rostro' });
+        }
+
+        //Validación de carpeta temporal
+        const carpetaTemporal = path.join(__dirname, "../uploads")
+        if(!fs.existsSync(carpetaTemporal)){
+            return res.status(500).json({ msg: 'Error: La carpeta temporal no existe. Verifica la configuración del sistema.' });
+        }
+        
+        
+        //Iterar sobre las imágenes en la carpeta temporal
+        const archivos = fs.readFileSync(carpetaTemporal)
+        let mejorCoincidencia = null
+        
+        for(const archivo of archivos){
+            const rutaImagenEstudiante = path.join(carpetaTemporal, archivo)
+            const imagenEstudiante = await cargarImagen(rutaImagenEstudiante);
+            const deteccionEstudiante = await faceapi.detectSingleFace(imagenEstudiante).withFaceLandmarks().withFaceDescriptor();
+            
+            if (deteccionEstudiante) {
+        
+                console.log("Deteccion referencia",deteccionEstudiante)
+                const faceMatcher = new faceapi.FaceMatcher(detecciones);
+                // Comparar los descriptores faciales
+                const coincidencia = faceMatcher.findBestMatch(deteccionEstudiante.descriptor);
+                console.log("mejor coincidencia: ", coincidencia)
+                // Enviar la respuesta al frontend
+                if (coincidencia.label !== 'unknown') {
+                    mejorCoincidencia = coincidencia 
+                    fs.unlinkSync(rutaImagenEstudiante) //Eliminar la imagen reconocida   
+                    break              
+                } 
+            }
+        }
+
+        if(mejorCoincidencia){
+            console.log("si se reconocio la imagen")
+            // Eliminar la imagen temporal después del reconocimiento
+            fs.unlinkSync(imagePath);
+            return res.status(200).json({ msg: 'Persona reconocida', coincidencia: mejorCoincidencia?.toString() });
+        }else {
+            return res.status(404).json({ msg: 'Rostro no reconocido'});
+        }
+        
+    } catch (error) {
+        res.status(500).json({ msg: `Hubo un problema en el servidor: ${error.message}` });
+    } 
+};
+
+// Inicializar los modelos al cargar el módulo
+loadModels().catch(error => console.error('Error al cargar los modelos:', error));
+
+export default reconocimientoFacial;
 
 
-
-// // Cargar y calcular descriptores faciales
-// async function calcularDescriptores(estudiantes) {
-//     return Promise.all(estudiantes.map(async(estudiante) => {
-//         const img = await canvas.loadImage(estudiante.path);
-//         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-//         if (detections) {
-//             return { id: estudiante.id, nombre: estudiante.nombre, descriptor: detections.descriptor };
-//         }
-//         return null;
-//     }));
-// }
-
-
-
-// // Lógica principal
-// async function main() {
-//     await loadModels();
-//     const estudiantes = await Estudiante.find({ curso: 'Curso1' });
-//     const imagePaths = await downloadStudentImages(estudiantes);
-//     return await calcularDescriptores(imagePaths);
-
-// }
-
-// main().catch(console.error);
-// }
-
-// export default reconocimientoFacial

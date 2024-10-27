@@ -2,10 +2,11 @@ import Asistencia from "../models/asistencias.js"
 import mongoose from "mongoose"
 import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
+import reconocimientoFacial from "./reconocimiento_facial.js"
 //import reconocimientoFacial from "./reconocimiento_facial.js"
 //import Actuaciones from "../models/actuaciones.js"
 //Gestionar asistencias
-
+import { descargarImgsEstudiantes, eliminarCarpetaTemporal } from "../service/imgs_cloudinary.js"
 
 //Crear asistencia
 //Esto es para la IA
@@ -41,6 +42,28 @@ const visualizarAsistencias = async(req, res)=>{
         if(asistenciasEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron asistencias registradas con esa materia o paralelo"})
         if(!asistenciasEncontradas) return res.status(400).json({msg: "Lo sentimos pero esta asistencia no existe"})      
         
+        //Descargar de manera temporal las imagenes de los estudiantes del curso
+        let estudiantesURLS = [] 
+        
+        for (const estudianteId of cursoEncontrado?.estudiantes){
+            try {                
+                const estudianteEncontrado = await Estudiantes.findById(estudianteId.toString())              
+                if(estudianteEncontrado?.fotografia){
+                    estudiantesURLS.push(estudianteEncontrado?.fotografia)
+                }
+            } catch (error) {
+                console.error(`Error al encontrar el ID del estudiante ${estudianteId}: ${error.message}`)
+            }
+
+        }
+            
+        if(estudiantesURLS.length === 0) return res.status().json({msg: "No se encontraron fotografías de estudiantes"})
+
+        console.log("LAS URLS son: ",estudiantesURLS)
+
+
+        await descargarImgsEstudiantes(estudiantesURLS, `${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}`)
+
         res.status(200).json(asistenciasEncontradas)
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -67,19 +90,23 @@ const actualizarAsistencia = async(req, res)=>{
         //if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        //Implementación de la IA
-        ///await reconocimientoFacial(materia, paralelo)
-        //await reconocimientoFacial()
-        //EN CONSTRUCCION
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
 
+
+            //MEJORAR ESTO
         const asistenciaEncontrada = await Asistencia.findAndUpdate(id, req.body)
         if(!asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos pero la asistencia no se encuentra registrada"})
-        
+            
         await asistenciaEncontrada.save()
 
 
+        //Eliminar carpeta temporal de imgs cuando se actualiza las asistencias
+        eliminarCarpetaTemporal(`${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}`)
 
-        res.status(200).json({msg: "Asistencia registrada con éxito"})
+        res.status(200).json({
+            msg: "Asistencia registrada con éxito"
+        })
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
@@ -136,6 +163,30 @@ const visualizarReporte = async(req, res) =>{
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)           
     }
 }
+
+
+
+// const reconocimientoFacial = async(req, res)=>{
+
+//     try {
+//         //AQUI VA LO DE LA IA
+
+//         //Implementación de la IA
+//         //const IA = await reconocimientoFacial(materia, paralelo)
+//         const reconocerRostros = await reconocimientoFacial("Aplicaciones Web", "GR2")
+
+//         if(!reconocerRostros) return res.status(500).json({msg : "Hubo un error en el reconocimiento facial"})
+
+
+//         //Procesar la imagen recibida del frontend 
+//         const resultado = await reconocerRostros(req, res) //El reconocimiento facial devuelve la imagen con los cuadros
+//         if(!resultado || !resultado.image) return res.status(resultado?.code).json({msg: resultado.msg})
+
+//     } catch (error) {
+//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)           
+        
+//     }
+// }
 
 
 export{
