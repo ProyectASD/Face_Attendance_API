@@ -137,7 +137,7 @@ const reconocimientoFacial = async (req, res) => {
         }
 
         //Validación de carpeta temporal
-        const carpetaTemporal = path.join(__dirname, "../uploads")
+        const carpetaTemporal = path.join(__dirname, `../uploads/${req.body?.materia}-${req.body?.paralelo}`)
         if(!fs.existsSync(carpetaTemporal)){
             return res.status(500).json({ msg: 'Error: La carpeta temporal no existe. Verifica la configuración del sistema.' });
         }
