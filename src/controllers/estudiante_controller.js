@@ -21,9 +21,15 @@ const registroEstudiante = async(req,res)=>{
         nuevoEstudiante.password = await nuevoEstudiante.encryptPassword(password)
         const token = await nuevoEstudiante?.createToken()
         nuevoEstudiante.token = token
-    
+        try {
+            await nuevoEstudiante?.save()
+        } catch (error) {
+            if (error.code === 11000) {
+                return res.status(400).json({ message: "Recuerde el número de cedula es único. Por favor, ingreselo nuevamente." });
+            }
+        }
+        
         enviarCorreoEstudiante(nuevoEstudiante.email, token)
-        await nuevoEstudiante?.save()
 
         //Subir imagen a cloudinary
         cloudinary.uploader.upload_stream({public_id: nuevoEstudiante?._id}, async(err, resultado)=>{
