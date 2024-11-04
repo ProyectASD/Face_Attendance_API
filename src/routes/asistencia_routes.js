@@ -19,7 +19,7 @@ router.post("/visualizar", autenticarDocente, visualizarAsistencias)
 router.get("/visualizar/:id", autenticarDocente, visualizarAsistencia)
 router.put("/actualizar", autenticarDocente, actualizarAsistencia) //FALTA DE TERMINAR
 router.delete("/eliminar/:id", autenticarDocente, eliminarAsistencia)
-router.post("/reporte", visualizarReporte)
+router.post("/reporte", autenticarDocente, visualizarReporte)
 
 //IA
 router.post("/reconocimiento-facial", upload.single("image"), reconocimientoFacial)

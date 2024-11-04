@@ -125,68 +125,56 @@ const eliminarAsistencia = async(req, res)=>{
     }
 }
 
-//Visualizar reporte de asistencias
-const visualizarReporte = async(req, res) =>{
-    const {fecha, materia, paralelo} = req.body
+// //Visualizar reporte de asistencias
+
+const visualizarReporte = async (req, res) => {
+    const { fecha, materia, paralelo } = req.body;
+
     try {
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
-
-        const asistenciaEncontradas = await Asistencia.find({curso: cursoEncontrado?._id})
-        console.log(asistenciaEncontradas?.fecha_asistencias)
-        if(asistenciaEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron asistencias registradas"})      
-                
-        let estadoAsistencia = "";
-        if(fecha?.length != 0 && fecha !== undefined) {
-            for(let i = 0; i < asistenciaEncontradas.fecha_asistencias.length; i++){
-                    if(fecha == asistenciaEncontradas.fecha_asistencias[i]){
-                    estadoAsistencia = asistenciaEncontradas.estado_asistencias[i]
-                    console.log("FECHAS: ",asistenciaEncontradas.fecha_asistencias)
-                    console.log(`Indice: ${i}`)
-                    const {estudiante} = asistenciaEncontradas         
-                    return res.status(200).json({
-                        estudiante,
-                        estadoAsistencia,
+        if (Object.values(req.body).includes(""))  return res.status(400).json({ msg: "Todos los campos deben de estar llenos." })
+        const cursoEncontrado = await Cursos.findOne({ materia, paralelo })
+        if (!cursoEncontrado) return res.status(404).json({ msg: "No se ha podido encontrar el curso." })
+        
+        const asistencias = await Asistencia.find({ curso: cursoEncontrado._id }).populate("estudiante", "nombre apellido -_id")
+        if (asistencias.length === 0) return res.status(400).json({ msg: "No se encontraron asistencias registradas." })
+        
+        // Si se proporciona una fecha, filtrar asistencias por esa fecha
+        if (fecha) {
+            const asistenciasFiltradas = asistencias
+                .filter(asistencia => asistencia.fecha_asistencias.includes(fecha))
+                .map(asistencia => {
+                    const indiceFecha = asistencia.fecha_asistencias.indexOf(fecha);
+                    return {
+                        estudiante: asistencia.estudiante,
+                        estadoAsistencia: asistencia.estado_asistencias[indiceFecha],
                         fecha
-                    })
-                }
+                    };
+                });
+
+            if (asistenciasFiltradas.length === 0) {
+                return res.status(404).json({ msg: "La fecha especificada no se encuentra registrada." });
             }
-            if(estadoAsistencia.length === 0){
-                    return res.status(404).json({msg: "Lo sentimos pero esa fecha no se encuentra registrada"})
-            }
+
+            return res.status(200).json(asistenciasFiltradas);
         }
 
-        res.status(200).json(asistenciaEncontradas)
+        // Si no se proporciona fecha, devolver todas las asistencias y estudiantes
+        const resultadoCompleto = asistencias.map(asistencia => ({
+            estudiante: asistencia.estudiante,
+            fechasAsistencias: asistencia.fecha_asistencias,
+            estadosAsistencias: asistencia.estado_asistencias,
+            cantidadAsistencias: asistencia.cantidad_asistencias,
+            cantidadPresentes: asistencia.cantidad_presentes,
+            cantidadAusencias: asistencia.cantidad_ausencias
+        }));
+
+        res.status(200).json(resultadoCompleto);
+
     } catch (error) {
-        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)           
+        res.status(500).json({ msg: `Hubo un problema con el servidor: ${error.message}` });
     }
-}
+};
 
-
-
-// const reconocimientoFacial = async(req, res)=>{
-
-//     try {
-//         //AQUI VA LO DE LA IA
-
-//         //Implementación de la IA
-//         //const IA = await reconocimientoFacial(materia, paralelo)
-//         const reconocerRostros = await reconocimientoFacial("Aplicaciones Web", "GR2")
-
-//         if(!reconocerRostros) return res.status(500).json({msg : "Hubo un error en el reconocimiento facial"})
-
-
-//         //Procesar la imagen recibida del frontend 
-//         const resultado = await reconocerRostros(req, res) //El reconocimiento facial devuelve la imagen con los cuadros
-//         if(!resultado || !resultado.image) return res.status(resultado?.code).json({msg: resultado.msg})
-
-//     } catch (error) {
-//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)           
-        
-//     }
-// }
 
 
 export{

@@ -131,14 +131,13 @@ const eliminarActuacion = async(req, res) =>{
 const visualizarReporte = async(req, res)=>{
     const {materia, paralelo} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
     
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
         
-        const actuacionesEncontradas = await Actuaciones.findOne({curso: cursoEncontrado?._id})
-        if(!actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron actuaciones registradas"})      
-        //AQUI FILTRO POR FECHA SI ES QUE SE DESEA
+        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id}).select("-updatedAt -createdAt -__v").populate("estudiante", "nombre apellido -_id").populate("curso", "materia paralelo")
+        if(!actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron actuaciones registradas"})      
         
         res.status(200).json(actuacionesEncontradas)
 
@@ -147,49 +146,6 @@ const visualizarReporte = async(req, res)=>{
     }
 }
 
-
-// const visualizarReporte = async(req, res) =>{
-//     const {fecha, materia, paralelo} = req.body
-//     try {
-//         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-
-//         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
-//         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
-
-//         const asistenciaEncontradas = await Asistencia.find({curso: cursoEncontrado?._id})
-//         console.log(asistenciaEncontradas?.fecha_asistencias)
-//         if(asistenciaEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron asistencias registradas"})      
-                
-//         let estadoAsistencia = "";
-//         if(fecha?.length != 0 && fecha !== undefined) {
-//             for(let i = 0; i < asistenciaEncontradas.fecha_asistencias.length; i++){
-//                     if(fecha == asistenciaEncontradas.fecha_asistencias[i]){
-//                     estadoAsistencia = asistenciaEncontradas.estado_asistencias[i]
-//                     console.log("FECHAS: ",asistenciaEncontradas.fecha_asistencias)
-//                     console.log(`Indice: ${i}`)
-//                     const {estudiante} = asistenciaEncontradas         
-//                     return res.status(200).json({
-//                         estudiante,
-//                         estadoAsistencia,
-//                         fecha
-//                     })
-//                 }
-//             }
-//             if(estadoAsistencia.length === 0){
-//                     return res.status(404).json({msg: "Lo sentimos pero esa fecha no se encuentra registrada"})
-//             }
-//         }
-
-//         res.status(200).json(asistenciaEncontradas)
-//     } catch (error) {
-//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)           
-//     }
-// }
-
-
-
-
-
 export {
     // crearActuacion,
     estudiantesPresentes,
@@ -197,5 +153,6 @@ export {
     visualizarActuaciones,
     actualizarActuacion,
     actualizarActuaciones,
-    eliminarActuacion
+    eliminarActuacion,
+    visualizarReporte
 }
