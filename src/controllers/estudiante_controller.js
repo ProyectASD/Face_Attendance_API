@@ -102,7 +102,9 @@ const modificarPerfilEstudiante = async(req, res) =>{
         let estudiantePerfil = await Estudiantes.findByIdAndUpdate(id, req.body)
         if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
         
-        if(req.body.image){
+        console.log(req.body)
+
+        if(req.file){
         //Eliminar imagen existente de cloudinary
             await cloudinary.uploader.destroy(estudiantePerfil?._id,(err, resultado)=>{
                 if(err) console.log("Error al eliminar la imagen", err)

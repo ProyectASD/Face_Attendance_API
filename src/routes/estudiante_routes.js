@@ -31,7 +31,7 @@ router.post("/nueva-password/:token", nuevaPasswordEstudiante)
 
 
 //Rutas privadas
-router.put("/modificar-perfil/:id", autenticarEstudiante, modificarPerfilEstudiante)
+router.put("/modificar-perfil/:id", upload.single("image"), autenticarEstudiante, modificarPerfilEstudiante)
 //aqui va el de visualizar peril
 router.get("/perfil", autenticarEstudiante, visualizarPerfilEstudiante)
 router.post("/ingresar-codigo", autenticarEstudiante, ingresarCodigo)

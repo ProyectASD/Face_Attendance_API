@@ -85,8 +85,15 @@ const actualizarActuacion = async(req, res) =>{
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        const actuacionEncontrada = await Actuaciones.findByIdAndUpdate(id, req.body)
+    //    const actuacionEncontrada = await Actuaciones.findByIdAndUpdate(id)
+        const actuacionEncontrada = await Actuaciones.findById(id)
         if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos pero la actuacion no se encuentra registrada"})
+        
+        actuacionEncontrada.cantidad_actuaciones = actuacionEncontrada.cantidad_actuaciones + req.body.cantidad_actuaciones
+        console.log(actuacionEncontrada.cantidad_actuaciones)
+
+        actuacionEncontrada.descripciones.push(req.body.descripciones)
+
         await actuacionEncontrada.save()
 
         res.status(200).json(actuacionEncontrada)
