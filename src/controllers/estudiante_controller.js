@@ -98,10 +98,28 @@ const modificarPerfilEstudiante = async(req, res) =>{
     try {
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const estudiantePerfil = await Estudiantes.findByIdAndUpdate(id, req.body)
+        
+        let estudiantePerfil = await Estudiantes.findByIdAndUpdate(id, req.body)
         if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+        
+        if(req.body.image){
+        //Eliminar imagen existente de cloudinary
+            await cloudinary.uploader.destroy(estudiantePerfil?._id,(err, resultado)=>{
+                if(err) console.log("Error al eliminar la imagen", err)
+                else console.log("Imagen eliminada", resultado)
+            })
+        //Actualizar la nueva imagen a cloudinary
+            cloudinary.uploader.upload_stream({public_id: estudiantePerfil?._id}, async(err, resultado)=>{
+                if(err) return res.status(500).send(`Hubo un problema al subir la imagen ${err.message}`)       
+                
+                estudiantePerfil = await Estudiantes.findByIdAndUpdate(estudiantePerfil?._id,{fotografia: resultado.secure_url})
+                if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+
+            }).end(req.file.buffer)
+        }
         await estudiantePerfil.save()
         res.status(200).json({msg: "Perfil modificado con éxito"})
+
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
@@ -119,7 +137,6 @@ const visualizarPerfilEstudiante = async (req, res) =>{
     //delete req.estudiante.password
 
     res.status(200).json(req.estudiante)
-    
 }
 
 //Recuperar password

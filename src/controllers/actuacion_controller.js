@@ -19,7 +19,6 @@ const estudiantesPresentes = async(req, res)=>{
 
         //Obtener ultimo elemento del arreglo estado de asistencias
 
-
         const estudiantesPresentesIds = asistenciaEstudiantes.filter((asistencia) =>{
             let ultimoElemento = asistencia.estado_asistencias[asistencia.estado_asistencias.length - 1]
             console.log(ultimoElemento)
@@ -28,15 +27,14 @@ const estudiantesPresentes = async(req, res)=>{
 
         //Listar solo los que estudiantes que estan presentes
         const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id, estudiante: { $in: estudiantesPresentesIds}})
-        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no existen actuaciones registradas con esa materia o paralelo"})      
+        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no existen estudiantes presentes"})      
         
-        if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos pero esta actuación no existe"})      
+        if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta actuación no existe"})      
         
         const informacionActuaciones = actuacionesEncontradas.map((actuacion) =>{
             const{estudiante,cantidad_actuaciones} = actuacion
             return {estudiante, cantidad_actuaciones}
         })
-
 
 
         res.status(200).json(informacionActuaciones)
