@@ -2,6 +2,7 @@ import Actuaciones from "../models/actuaciones.js"
 import mongoose from "mongoose"
 import Cursos from "../models/cursos.js"
 import Asistencias from "../models/asistencias.js"
+import actuaciones from "../models/actuaciones.js"
 
 //Gestionar Actuaciones
 
@@ -85,13 +86,16 @@ const actualizarActuacion = async(req, res) =>{
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-    //    const actuacionEncontrada = await Actuaciones.findByIdAndUpdate(id)
         const actuacionEncontrada = await Actuaciones.findById(id)
         if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos pero la actuacion no se encuentra registrada"})
-        
-        actuacionEncontrada.cantidad_actuaciones = actuacionEncontrada.cantidad_actuaciones + req.body.cantidad_actuaciones
+            
+        const cantidadActuaciones = Number(req.body.cantidad_actuaciones)
+        if(isNaN(cantidadActuaciones)) return res.status(400).json({ msg: "La cantidad de actuaciones debe ser un número válido" });
+
+        actuacionEncontrada.cantidad_actuaciones += cantidadActuaciones
         console.log(actuacionEncontrada.cantidad_actuaciones)
 
+        actuacionEncontrada.fecha_actuaciones.push(req.body.fecha_actuaciones)
         actuacionEncontrada.descripciones.push(req.body.descripciones)
 
         await actuacionEncontrada.save()
@@ -104,14 +108,32 @@ const actualizarActuacion = async(req, res) =>{
 
 //Actualizar varios actuaciones
 const actualizarActuaciones = async(req, res) =>{
+    const {materia, paralelo, fecha, contenido} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        const actuacionesEncontradas = await Actuaciones.find().updateMany()
-        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron actuaciones registradas"})      
-        await actuacionesEncontradas.save()
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
+
+        const actuacionesActualizadas = await Promise.all(
+            contenido.actuaciones.map(async(actuacion)=>{
+                const actuacionEncontrada = await Actuaciones.findOne({curso: cursoEncontrado?._id, _id: actuacion?.id })
+                if(!actuacionEncontrada) return res.status(400).json({msg: `Lo sentimos, la actuación con ID ${actuacion?.id} no se encuentra registrada`})      
+                
+                const cantidadActuaciones = Number(actuacion.cantidad_actuaciones)
+                if(isNaN(cantidadActuaciones)) return res.status(400).json({ msg: "La cantidad de actuaciones debe ser un número válido" });
         
-        res.status(200).json(actuacionesEncontradas)    
+                actuacionEncontrada.cantidad_actuaciones += cantidadActuaciones
+        
+                actuacionEncontrada.fecha_actuaciones.push(fecha)
+                actuacionEncontrada.descripciones.push(actuacion.descripciones)
+            
+                await actuacionEncontrada.save()
+                return actuacionEncontrada
+            })
+        )
+        
+        res.status(200).json({msg: "Actuaciones actualizadas con éxito", actuaciones: actuacionesActualizadas})    
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }

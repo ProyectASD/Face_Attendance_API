@@ -230,7 +230,7 @@ const ingresarCodigo = async(req, res)=>{
 //Visualizar cursos asignados del estudiante
 const visualizarCurso = async(req, res) =>{
     try {
-        const cursosEncontrado = await Cursos.find({estudiantes: req.estudiante._id})
+        const cursosEncontrado = await Cursos.find({estudiantes: req.estudiante._id}).populate("docente", "nombre apellido -_id")
         if(!cursosEncontrado || cursosEncontrado.length === 0) return res.status(404).json({msg: "No se encontraron cursos"})
 
         const informacionCursos = cursosEncontrado.map(curso =>{
