@@ -37,7 +37,6 @@ const estudiantesPresentes = async(req, res)=>{
             return {estudiante, cantidad_actuaciones}
         })
 
-
         res.status(200).json(informacionActuaciones)
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -131,8 +130,7 @@ const actualizarActuaciones = async(req, res) =>{
                 await actuacionEncontrada.save()
                 return actuacionEncontrada
             })
-        )
-        
+        )        
         res.status(200).json({msg: "Actuaciones actualizadas con éxito", actuaciones: actuacionesActualizadas})    
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   

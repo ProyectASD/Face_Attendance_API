@@ -54,7 +54,6 @@ const visualizarAsistencias = async(req, res)=>{
             } catch (error) {
                 console.error(`Error al encontrar el ID del estudiante ${estudianteId}: ${error.message}`)
             }
-
         }
             
         if(estudiantesURLS.length === 0) return res.status().json({msg: "No se encontraron fotografías de estudiantes"})
@@ -85,7 +84,7 @@ const visualizarAsistencia = async(req, res)=>{
 
 //Actualizar asistencia - SE SUPONE QUE AQUI VA LA IA
 const actualizarAsistencia = async(req, res)=>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, estudiantes, fecha} = req.body
     try {
         //if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
@@ -93,19 +92,42 @@ const actualizarAsistencia = async(req, res)=>{
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
 
-
-            //MEJORAR ESTO
-        const asistenciaEncontrada = await Asistencia.findAndUpdate(id, req.body)
-        if(!asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos pero la asistencia no se encuentra registrada"})
+        //MEJORAR ESTO
+        
+        const asistenciasActualizadas = await Promise.all(
+            estudiantes.map(async(asistencia)=>{
+                // const actuacionEncontrada = await Actua
+                const asistenciaEncontrada = await Asistencia.findOne({curso: cursoEncontrado._id, estudiante: asistencia.estudianteId, _id: asistencia.asistenciaId})
+                if(!asistenciaEncontrada) return res.status(400).json({msg: `Lo sentimos, la asistencia con ID ${asistencia?._id} no se encuentra registrada`})
             
-        await asistenciaEncontrada.save()
+                asistenciaEncontrada.fecha_asistencias.push(fecha)
 
+                if(asistencia.estado === "presente"){
+                    asistenciaEncontrada.cantidad_asistencias+=1
+                    asistenciaEncontrada.cantidad_presentes+=1
+                    asistenciaEncontrada.estado_asistencias.push(asistencia.estado)
+                    
+                } else {
+                    if(asistencia.estado === "ausente"){
+                        asistenciaEncontrada.cantidad_asistencias+=1
+                        asistenciaEncontrada.cantidad_ausencias+=1
+                        asistenciaEncontrada.estado_asistencias.push(asistencia.estado)
+                    }
+
+                }
+            
+                await asistenciaEncontrada.save()
+                return asistenciaEncontrada
+
+            })
+        )
 
         //Eliminar carpeta temporal de imgs cuando se actualiza las asistencias
         eliminarCarpetaTemporal(`${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}`)
 
         res.status(200).json({
-            msg: "Asistencia registrada con éxito"
+            msg: "Asistencias registradas con éxito",
+            asistencias: asistenciasActualizadas
         })
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
