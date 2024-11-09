@@ -59,10 +59,11 @@ const loginDocente = async(req, res)=>{
         if(!confirmarPassword) return res.status(404).json({msg: "Lo sentimos pero la contraseña es incorrecta"})
 
         const token = crearToken(docenteEncontrado.id, "docente")
-        const {nombre, apellido, ciudad, direccion} = docenteEncontrado
+        const {id, nombre, apellido, ciudad, direccion} = docenteEncontrado
 
         await docenteEncontrado.save()
         res.status(200).json({
+            id,
             nombre,
             apellido, 
             ciudad, 
@@ -171,15 +172,15 @@ const crearEstudiante = async(req, res) =>{
     //Visualizar estudiantes
 
 const visualizarEstudiantes = async(req, res) =>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
 
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontra el curso"})
         
         const estudiantesEncontrado = await Estudiantes.find({_id: {$in: cursoEncontrado?.estudiantes}})
-        if(estudiantesEncontrado.length === 0 || !estudiantesEncontrado) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron estudiantes registrados"})
+        if(estudiantesEncontrado.length === 0 || !estudiantesEncontrado) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron estudiantes registrados"})
         res.status(200).json(estudiantesEncontrado)
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   

@@ -23,8 +23,9 @@ import mongoose from "mongoose"
         //Visualizar cursos
     
     const visualizarCursosDocente = async(req, res) =>{
+        const {docenteId} = req.body
         try {
-            const cursosEncontrado = await Cursos.find()
+            const cursosEncontrado = await Cursos.find({docente: docenteId}).select("-createdAt -updatedAt -__v")
             if(cursosEncontrado.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron cursos registrados"})
             res.status(200).json(cursosEncontrado)
         } catch (error) {

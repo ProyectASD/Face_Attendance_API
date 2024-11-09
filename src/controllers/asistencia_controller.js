@@ -8,39 +8,18 @@ import reconocimientoFacial from "./reconocimiento_facial.js"
 //Gestionar asistencias
 import { descargarImgsEstudiantes, eliminarCarpetaTemporal } from "../service/imgs_cloudinary.js"
 
-//Crear asistencia
-//Esto es para la IA
-// const crearAsistencia = async(req, res)=>{
-//     const {estudiante} = req.body
-//     try {
-//         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-//         const asistenciaEncontrada = await Asistencia.findOne({estudiante})
-//         if(asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos pero esta asistencia ya esta registrada"})
-//         const estudianteEncontrado = await Estudiantes.findById(estudiante)
-//         if(!estudianteEncontrado) return res.status(404).json({msg: "No se a podido crear la asistencia, ya que el estudiante no existe"})
-        
-//         const asistenciaNueva = new Asistencia(req.body)
-//         await asistenciaNueva.save()
-
-//         res.status(200).json({msg: "Asistencia creada con éxito"})
-        
-//     } catch (error) {
-//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
-//     }
-// }
-
 //Visualizar asistencias
 const visualizarAsistencias = async(req, res)=>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontra el curso"})
 
         const asistenciasEncontradas = await Asistencia.find({curso: cursoEncontrado?._id})
         console.log(asistenciasEncontradas)
-        if(asistenciasEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no se encuentraron asistencias registradas con esa materia o paralelo"})
-        if(!asistenciasEncontradas) return res.status(400).json({msg: "Lo sentimos pero esta asistencia no existe"})      
+        if(asistenciasEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron asistencias registradas con esa materia o paralelo"})
+        if(!asistenciasEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta asistencia no existe"})      
         
         //Descargar de manera temporal las imagenes de los estudiantes del curso
         let estudiantesURLS = [] 
@@ -61,7 +40,7 @@ const visualizarAsistencias = async(req, res)=>{
         console.log("LAS URLS son: ",estudiantesURLS)
 
 
-        await descargarImgsEstudiantes(estudiantesURLS, `${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}`)
+        await descargarImgsEstudiantes(estudiantesURLS, `${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}-${cursoEncontrado?.semestre}`)
 
         res.status(200).json(asistenciasEncontradas)
     } catch (error) {
@@ -84,12 +63,12 @@ const visualizarAsistencia = async(req, res)=>{
 
 //Actualizar asistencia - SE SUPONE QUE AQUI VA LA IA
 const actualizarAsistencia = async(req, res)=>{
-    const {materia, paralelo, estudiantes, fecha} = req.body
+    const {materia, paralelo,semestre,  estudiantes, fecha} = req.body
     try {
         //if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
 
         //MEJORAR ESTO
@@ -123,7 +102,7 @@ const actualizarAsistencia = async(req, res)=>{
         )
 
         //Eliminar carpeta temporal de imgs cuando se actualiza las asistencias
-        eliminarCarpetaTemporal(`${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}`)
+        eliminarCarpetaTemporal(`${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}-${cursoEncontrado?.semestre}`)
 
         res.status(200).json({
             msg: "Asistencias registradas con éxito",
@@ -150,11 +129,11 @@ const eliminarAsistencia = async(req, res)=>{
 // //Visualizar reporte de asistencias
 
 const visualizarReporte = async (req, res) => {
-    const { fecha, materia, paralelo } = req.body;
+    const { fecha, materia, paralelo, semestre } = req.body;
 
     try {
         if (Object.values(req.body).includes(""))  return res.status(400).json({ msg: "Todos los campos deben de estar llenos." })
-        const cursoEncontrado = await Cursos.findOne({ materia, paralelo })
+        const cursoEncontrado = await Cursos.findOne({ materia, paralelo, semestre })
         if (!cursoEncontrado) return res.status(404).json({ msg: "No se ha podido encontrar el curso." })
         
         const asistencias = await Asistencia.find({ curso: cursoEncontrado._id }).populate("estudiante", "nombre apellido -_id")

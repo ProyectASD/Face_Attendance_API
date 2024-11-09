@@ -8,10 +8,10 @@ import actuaciones from "../models/actuaciones.js"
 
 //Visualizar estudiantes presentes
 const estudiantesPresentes = async(req, res)=>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
 
         const asistenciaEstudiantes = await Asistencias.find({curso: cursoEncontrado?._id})
@@ -60,10 +60,10 @@ const visualizarActuacion = async(req, res) =>{
 
 //Visualizar varias actuaciones
 const visualizarActuaciones = async(req, res) =>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
 
         const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id})
@@ -107,11 +107,11 @@ const actualizarActuacion = async(req, res) =>{
 
 //Actualizar varios actuaciones
 const actualizarActuaciones = async(req, res) =>{
-    const {materia, paralelo, fecha, contenido} = req.body
+    const {materia, paralelo, semestre, fecha, contenido} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
 
         const actuacionesActualizadas = await Promise.all(
@@ -154,11 +154,11 @@ const eliminarActuacion = async(req, res) =>{
 //Visualizar reporte de actuaciones
 
 const visualizarReporte = async(req, res)=>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
     
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
         
         const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id}).select("-updatedAt -createdAt -__v").populate("estudiante", "nombre apellido -_id").populate("curso", "materia paralelo")

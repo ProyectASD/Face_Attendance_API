@@ -234,8 +234,8 @@ const visualizarCurso = async(req, res) =>{
         if(!cursosEncontrado || cursosEncontrado.length === 0) return res.status(404).json({msg: "No se encontraron cursos"})
 
         const informacionCursos = cursosEncontrado.map(curso =>{
-            const {codigo, paralelo, materia, docente} = curso
-            return {codigo, paralelo, materia, docente}
+            const {codigo, paralelo, materia, semestre, docente} = curso
+            return {codigo, paralelo, materia, semestre, docente}
         })
         
         res.status(200).json({
@@ -248,10 +248,16 @@ const visualizarCurso = async(req, res) =>{
 
 //Visualizar  asistencias del estudiante
 const visualizarAsistencias = async(req, res)=>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({estudiantes: req.estudiante._id, materia: materia, paralelo: paralelo})
+        const cursoEncontrado = await Cursos.findOne({
+            estudiantes: req.estudiante._id, 
+            materia: materia, 
+            paralelo: paralelo, 
+            semestre: semestre
+        })
+
         if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos pero el curso no ha sido encontrado"})
         
         const asistenciasEncontradas = await Asistencias.findOne({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
@@ -268,14 +274,21 @@ const visualizarAsistencias = async(req, res)=>{
 
 //Visualizar del actuaciones estudiante
 const visualizarActuaciones = async(req, res) =>{
-    const {materia, paralelo} = req.body
+    const {materia, paralelo, semestre} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({estudiantes: req.estudiante._id, materia: materia, paralelo: paralelo})
-        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos pero el curso no ha sido encontrado"})
+        
+        const cursoEncontrado = await Cursos.findOne({
+            estudiantes: req.estudiante._id, 
+            materia: materia, 
+            paralelo: paralelo, 
+            semestre: semestre
+        })
+
+        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos, pero el curso no ha sido encontrado"})
         
         const actuacionesRegistradas = await Actuaciones.findOne({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
-        if(!actuacionesRegistradas) return res.status(404).json({msg: "Lo sentimos pero no se han encontrado actuaciones asociadas a este estudiante"})
+        if(!actuacionesRegistradas) return res.status(404).json({msg: "Lo sentimos, pero no se han encontrado actuaciones asociadas a este estudiante"})
         
         const {cantidad_actuaciones, descripciones, fecha_actuaciones} = actuacionesRegistradas
         res.status(200).json({
@@ -288,7 +301,6 @@ const visualizarActuaciones = async(req, res) =>{
     }
 }
 
-//TODO: ELIMINAR CREAR REGISTRO DE ASISTENCIA Y ACTUACION
 
 export { 
     registroEstudiante,
