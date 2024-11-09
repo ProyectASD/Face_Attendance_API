@@ -234,8 +234,8 @@ const visualizarCurso = async(req, res) =>{
         if(!cursosEncontrado || cursosEncontrado.length === 0) return res.status(404).json({msg: "No se encontraron cursos"})
 
         const informacionCursos = cursosEncontrado.map(curso =>{
-            const {codigo, paralelo, materia, semestre, docente} = curso
-            return {codigo, paralelo, materia, semestre, docente}
+            const {codigo, paralelo, materia, semestre,horario, docente} = curso
+            return {codigo, paralelo, materia, semestre, horario,  docente}
         })
         
         res.status(200).json({
