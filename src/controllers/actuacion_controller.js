@@ -27,7 +27,7 @@ const estudiantesPresentes = async(req, res)=>{
         }).map((asistencia) => asistencia.estudiante)
 
         //Listar solo los que estudiantes que estan presentes
-        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id, estudiante: { $in: estudiantesPresentesIds}})
+        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id, estudiante: { $in: estudiantesPresentesIds}}).populate("estudiante", "nombre apellido")
         if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no existen estudiantes presentes"})      
         
         if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta actuación no existe"})      
