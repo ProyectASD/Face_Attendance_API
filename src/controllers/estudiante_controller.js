@@ -11,11 +11,11 @@ import cloudinary from "../config/cloudinary.js"
 const registroEstudiante = async(req,res)=>{
     const {email, password} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         // if(!email.includes("epn.edu.ec")) return res.status(404).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
         
         const emailEncontrado = await Estudiantes.findOne({email})
-        if(emailEncontrado) return res.status(404).json({msg: "Lo sentimos pero este email ya se encuentra registrado"})
+        if(emailEncontrado) return res.status(404).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
      
         const nuevoEstudiante = new Estudiantes(req.body)
         nuevoEstudiante.password = await nuevoEstudiante.encryptPassword(password)
@@ -36,7 +36,7 @@ const registroEstudiante = async(req,res)=>{
             if(err) return res.status(500).send(`Hubo un problema al subir la imagen ${err.message}`)       
             
             const actualizarImgEstudiante = await Estudiantes.findByIdAndUpdate(nuevoEstudiante?._id,{fotografia: resultado.secure_url})
-            if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+            if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
             await actualizarImgEstudiante.save()
 
             //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
@@ -52,7 +52,7 @@ const registroEstudiante = async(req,res)=>{
 //Confirmar correo
 const confirmarEmailEstudiante = async(req,res)=>{
     try {
-        if(!(req.params.token)) return res.status(404).json({msg: "Lo sentimos no se pudo verificar la cuenta"})
+        if(!(req.params.token)) return res.status(404).json({msg: "Lo sentimos, no se pudo verificar la cuenta"})
         const usuarioConfirmado = await Estudiantes.findOne({token: req.params.token})
         if(!usuarioConfirmado?.token) return res.status(404).json({msg: "La cuenta ya ha sido confirmada"})
         usuarioConfirmado.token = null
@@ -70,11 +70,11 @@ const loginEstudiante = async(req, res)=>{
     try {
         if(Object.values(req.body).includes("") || email === undefined || password === undefined) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         const estudianteEncontrado = await Estudiantes.findOne({email})
-        if(estudianteEncontrado?.confirmEmail == false) return res.status(404).json({msg: "Lo sentimos pero la cuenta no ha sido verificada"})
-        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+        if(estudianteEncontrado?.confirmEmail == false) return res.status(404).json({msg: "Lo sentimos, pero la cuenta no ha sido verificada"})
+        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
         const confirmarPassword = await estudianteEncontrado.matchPassword(password)
-        if(!confirmarPassword) return res.status(404).json({msg: "Lo sentimos pero la contraseña es incorrecta"})
+        if(!confirmarPassword) return res.status(404).json({msg: "Lo sentimos, pero la contraseña es incorrecta"})
 
         const token = crearToken(estudianteEncontrado.id, "estudiante")
         const {nombre, apellido, ciudad, direccion} = estudianteEncontrado
@@ -96,11 +96,11 @@ const loginEstudiante = async(req, res)=>{
 const modificarPerfilEstudiante = async(req, res) =>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
         let estudiantePerfil = await Estudiantes.findByIdAndUpdate(id, req.body)
-        if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+        if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
         
         console.log(req.body)
 
@@ -115,7 +115,7 @@ const modificarPerfilEstudiante = async(req, res) =>{
                 if(err) return res.status(500).send(`Hubo un problema al subir la imagen ${err.message}`)       
                 
                 estudiantePerfil = await Estudiantes.findByIdAndUpdate(estudiantePerfil?._id,{fotografia: resultado.secure_url})
-                if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+                if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
             }).end(req.file.buffer)
         }
@@ -145,9 +145,9 @@ const visualizarPerfilEstudiante = async (req, res) =>{
 const recuperarPasswordEstudiante = async(req,res)=>{
     const {email} = req.body
     try {
-        if(Object.values(req.body).includes("") || email === undefined) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || email === undefined) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const estudianteEncontrado = await Estudiantes.findOne({email})
-        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos pero el estudiante no se encuentra registrado"})
+        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
         const token = await estudianteEncontrado?.createToken()
         estudianteEncontrado.token = token
@@ -163,9 +163,9 @@ const recuperarPasswordEstudiante = async(req,res)=>{
 //Confirmar recuperacion password
 const confirmarRecuperarPassword = async(req, res) =>{
     try {
-        if(!(req.params.token)) return res.status(404).json({msg: "Lo sentimos no se pudo verificar la recuperación de la contraseña"})
+        if(!(req.params.token)) return res.status(404).json({msg: "Lo sentimos, no se pudo verificar la recuperación de la contraseña"})
         const estudianteEncontrado = await Estudiantes.findOne({token: req.params.token})
-        if(estudianteEncontrado?.token !== req.params.token) return res.status(404).json({msg: "Lo sentimos no se pudo validar la cuenta"})
+        if(estudianteEncontrado?.token !== req.params.token) return res.status(404).json({msg: "Lo sentimos, no se pudo validar la cuenta"})
         await estudianteEncontrado.save()
         res.status(200).json({msg: "Token confirmado ahora puede cambiar su contraseña"})
     } catch (error) {
@@ -178,17 +178,17 @@ const confirmarRecuperarPassword = async(req, res) =>{
 const nuevaPasswordEstudiante = async(req,res) =>{
     const {password, confirmarPassword} = req.body
     try {
-        if(Object.values(req.body).includes("") || password === undefined || confirmarPassword === undefined) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
-        if(password !== confirmarPassword) return res.status(404).json({msg: "Lo sentimos pero las contraseñas no coinciden"})
+        if(Object.values(req.body).includes("") || password === undefined || confirmarPassword === undefined) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+        if(password !== confirmarPassword) return res.status(404).json({msg: "Lo sentimos, pero las contraseñas no coinciden"})
         
         const estudianteEncontrado = await Estudiantes.findOne({token: req.params.token})
-        if(estudianteEncontrado?.token !== req.params.token) return res.status(404).json({msg: "Lo sentimos no se pudo validar la cuenta"})
+        if(estudianteEncontrado?.token !== req.params.token) return res.status(404).json({msg: "Lo sentimos, no se pudo validar la cuenta"})
         
         estudianteEncontrado.token = null
         estudianteEncontrado.password = await estudianteEncontrado.encryptPassword(password)
         await estudianteEncontrado.save()
 
-        res.status(200).json({msg: "Contraseña actualizada con exito"})
+        res.status(200).json({msg: "Contraseña actualizada con éxito"})
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
@@ -199,16 +199,16 @@ const nuevaPasswordEstudiante = async(req,res) =>{
 const ingresarCodigo = async(req, res)=>{
     const {codigo} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const cursoEncontrado = await Cursos.findOne({codigo: codigo})
-        if(cursoEncontrado?.codigo !== codigo) return res.status(404).json({msg: "Lo sentimos pero el código ingresado no es correcto"})
+        if(cursoEncontrado?.codigo !== codigo) return res.status(404).json({msg: "Lo sentimos, pero el código ingresado no es correcto"})
        
         //VALIDAR QUE YA INGRESE AL CURSO        
         const estudianteEncontrado = cursoEncontrado?.estudiantes.some((estudiante) =>
             estudiante._id.toString() === req.estudiante._id.toString()  
         )
 
-        if(estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos pero ya te encuentras registrado en este curso"})
+        if(estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero ya te encuentras registrado en este curso"})
         await cursoEncontrado?.estudiantes.push(req.estudiante._id) 
         await cursoEncontrado.save()
 
@@ -250,7 +250,7 @@ const visualizarCurso = async(req, res) =>{
 const visualizarAsistencias = async(req, res)=>{
     const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const cursoEncontrado = await Cursos.findOne({
             estudiantes: req.estudiante._id, 
             materia: materia, 
@@ -258,10 +258,10 @@ const visualizarAsistencias = async(req, res)=>{
             semestre: semestre
         })
 
-        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos pero el curso no ha sido encontrado"})
+        if(!cursoEncontrado || cursoEncontrado.length === 0) return res.status(404).json({msg: "Lo sentimos, pero el curso no ha sido encontrado"})
         
         const asistenciasEncontradas = await Asistencias.findOne({estudiante: req.estudiante._id, curso: cursoEncontrado._id})
-        if(!asistenciasEncontradas) return res.status(404).json({msg: "Lo sentimos pero no se han encontrado asistencias asociadas a este estudiante"})
+        if(!asistenciasEncontradas) return res.status(404).json({msg: "Lo sentimos, pero no se han encontrado asistencias asociadas a este estudiante"})
         const { fecha_asistencias, estado_asistencias} = asistenciasEncontradas
         res.status(200).json({
             fecha_asistencias, 
@@ -276,7 +276,7 @@ const visualizarAsistencias = async(req, res)=>{
 const visualizarActuaciones = async(req, res) =>{
     const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
         const cursoEncontrado = await Cursos.findOne({
             estudiantes: req.estudiante._id, 

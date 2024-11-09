@@ -12,11 +12,11 @@ import { descargarImgsEstudiantes, eliminarCarpetaTemporal } from "../service/im
 const visualizarAsistencias = async(req, res)=>{
     const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontra el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        const asistenciasEncontradas = await Asistencia.find({curso: cursoEncontrado?._id})
+        const asistenciasEncontradas = await Asistencia.find({curso: cursoEncontrado?._id}).select("-createdAt -updatedAt -__v")
         console.log(asistenciasEncontradas)
         if(asistenciasEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron asistencias registradas con esa materia o paralelo"})
         if(!asistenciasEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta asistencia no existe"})      
@@ -52,9 +52,9 @@ const visualizarAsistencias = async(req, res)=>{
 const visualizarAsistencia = async(req, res)=>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
-        const asistenciaEncontrada = await Asistencia.findById(id)
-        if(!asistenciaEncontrada) return res.status(400).json({msg: "Lo sentimos pero la asistencia no se encuentra registrada"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
+        const asistenciaEncontrada = await Asistencia.findById(id).select("-createdAt -updatedAt -__v")
+        if(!asistenciaEncontrada) return res.status(400).json({msg: "Lo sentimos, pero la asistencia no se encuentra registrada"})
         res.status(200).json(asistenciaEncontrada)
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -66,18 +66,29 @@ const actualizarAsistencia = async(req, res)=>{
     const {materia, paralelo,semestre,  estudiantes, fecha} = req.body
     try {
         //if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontra el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
         //MEJORAR ESTO
         
         const asistenciasActualizadas = await Promise.all(
             estudiantes.map(async(asistencia)=>{
                 // const actuacionEncontrada = await Actua
-                const asistenciaEncontrada = await Asistencia.findOne({curso: cursoEncontrado._id, estudiante: asistencia.estudianteId, _id: asistencia.asistenciaId})
-                if(!asistenciaEncontrada) return res.status(400).json({msg: `Lo sentimos, la asistencia con ID ${asistencia?._id} no se encuentra registrada`})
+                if(
+                    !mongoose.isValidObjectId(asistencia?.estudianteId) || 
+                    !mongoose.isValidObjectId(asistencia?.asistenciaId)){
+                        return {
+                            code: 400,
+                            msg: "El formato de uno o más IDs no es válido."}
+                }
+
+                const asistenciaEncontrada = await Asistencia.findOne({curso: cursoEncontrado?._id, estudiante: asistencia?.estudianteId, _id: asistencia?.asistenciaId})
+                if(!asistenciaEncontrada) return {
+                    code: 400,
+                    msg: `Lo sentimos, la asistencia con ID ${asistencia?.asistenciaId} o el estudiante con ID ${asistencia?.estudianteId} no se encuentra registrada`
+                }
             
                 asistenciaEncontrada.fecha_asistencias.push(fecha)
 
@@ -92,7 +103,6 @@ const actualizarAsistencia = async(req, res)=>{
                         asistenciaEncontrada.cantidad_ausencias+=1
                         asistenciaEncontrada.estado_asistencias.push(asistencia.estado)
                     }
-
                 }
             
                 await asistenciaEncontrada.save()
@@ -104,10 +114,25 @@ const actualizarAsistencia = async(req, res)=>{
         //Eliminar carpeta temporal de imgs cuando se actualiza las asistencias
         eliminarCarpetaTemporal(`${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}-${cursoEncontrado?.semestre}`)
 
-        res.status(200).json({
-            msg: "Asistencias registradas con éxito",
-            asistencias: asistenciasActualizadas
-        })
+        const actualizas = asistenciasActualizadas.filter(asist => !asist.code)
+        const errores = asistenciasActualizadas.filter(asist => asist.code)
+
+        if(estudiantes.length === 1 && errores.length === 1){
+            return res.status(errores[0]?.code).json({msg: errores[0].msg})
+        }
+
+        if(errores.length > 0){
+            return res.status(200).json({
+                msg: "Algunas asistencias se han registrado con éxito", 
+                asistencias:{
+                    actualizas,
+                    errores
+                }})
+        }
+
+
+        res.status(200).json({msg: "Asistencias registradas con éxito", asistencias: asistenciasActualizadas})
+        
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
@@ -117,9 +142,9 @@ const actualizarAsistencia = async(req, res)=>{
 const eliminarAsistencia = async(req, res)=>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
         const asistenciaEncontrada = await Asistencia.findByIdAndDelete(id)
-        if(!asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos pero la asistencia no se encuentra registrado"})
+        if(!asistenciaEncontrada) return res.status(404).json({msg: "Lo sentimos, pero la asistencia no se encuentra registrada"})
         res.status(200).json({msg: "Asistencia eliminada con éxito"})        
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -137,7 +162,7 @@ const visualizarReporte = async (req, res) => {
         if (!cursoEncontrado) return res.status(404).json({ msg: "No se ha podido encontrar el curso." })
         
         const asistencias = await Asistencia.find({ curso: cursoEncontrado._id }).populate("estudiante", "nombre apellido -_id")
-        if (asistencias.length === 0) return res.status(400).json({ msg: "No se encontraron asistencias registradas." })
+        if (asistencias.length === 0) return res.status(400).json({ msg: "No se encontraron asistencias registradas" })
         
         // Si se proporciona una fecha, filtrar asistencias por esa fecha
         if (fecha) {
@@ -153,7 +178,7 @@ const visualizarReporte = async (req, res) => {
                 });
 
             if (asistenciasFiltradas.length === 0) {
-                return res.status(404).json({ msg: "La fecha especificada no se encuentra registrada." });
+                return res.status(404).json({ msg: "La fecha especificada no se encuentra registrada" });
             }
 
             return res.status(200).json(asistenciasFiltradas);
@@ -175,8 +200,6 @@ const visualizarReporte = async (req, res) => {
         res.status(500).json({ msg: `Hubo un problema con el servidor: ${error.message}` });
     }
 };
-
-
 
 export{
     // crearAsistencia,

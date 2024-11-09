@@ -10,12 +10,12 @@ import actuaciones from "../models/actuaciones.js"
 const estudiantesPresentes = async(req, res)=>{
     const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
         const asistenciaEstudiantes = await Asistencias.find({curso: cursoEncontrado?._id})
-        if(!asistenciaEstudiantes) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar la asistencia del estudiante"})
+        if(!asistenciaEstudiantes) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar la asistencia del estudiante"})
         console.log(asistenciaEstudiantes)
 
         //Obtener ultimo elemento del arreglo estado de asistencias
@@ -49,9 +49,9 @@ const estudiantesPresentes = async(req, res)=>{
 const visualizarActuacion = async(req, res) =>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
-        const actuacionEncontrada = await Actuaciones.findById(id)
-        if(!actuacionEncontrada) return res.status(400).json({msg: "Lo sentimos pero la actuación no se encuentra registrada"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
+        const actuacionEncontrada = await Actuaciones.findById(id).select("-createdAt -updatedAt -__v ")
+        if(!actuacionEncontrada) return res.status(400).json({msg: "Lo sentimos, pero la actuación no se encuentra registrada"})
         res.status(200).json(actuacionEncontrada)      
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -62,14 +62,14 @@ const visualizarActuacion = async(req, res) =>{
 const visualizarActuaciones = async(req, res) =>{
     const {materia, paralelo, semestre} = req.body
     try {
-        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id})
-        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos pero no existen actuaciones registradas con esa materia o paralelo"})      
+        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id}).select("-createdAt -updatedAt -__v")
+        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no existen actuaciones registradas con esa materia o paralelo"})      
         
-        if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos pero esta actuación no existe"})      
+        if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta actuación no existe"})      
         res.status(200).json(actuacionesEncontradas)
         
     } catch (error) {
@@ -82,11 +82,11 @@ const visualizarActuaciones = async(req, res) =>{
 const actualizarActuacion = async(req, res) =>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
-        const actuacionEncontrada = await Actuaciones.findById(id)
-        if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos pero la actuacion no se encuentra registrada"})
+        const actuacionEncontrada = await Actuaciones.findById(id).select("-createdAt -updatedAt -__v")
+        if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos, pero la actuacion no se encuentra registrada"})
             
         const cantidadActuaciones = Number(req.body.cantidad_actuaciones)
         if(isNaN(cantidadActuaciones)) return res.status(400).json({ msg: "La cantidad de actuaciones debe ser un número válido" });
@@ -107,20 +107,32 @@ const actualizarActuacion = async(req, res) =>{
 
 //Actualizar varios actuaciones
 const actualizarActuaciones = async(req, res) =>{
-    const {materia, paralelo, semestre, fecha, contenido} = req.body
+    const {materia, paralelo, semestre, fecha, actuaciones} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos pero no se ha podido encontrar el curso"})
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
         const actuacionesActualizadas = await Promise.all(
-            contenido.actuaciones.map(async(actuacion)=>{
-                const actuacionEncontrada = await Actuaciones.findOne({curso: cursoEncontrado?._id, _id: actuacion?.id })
-                if(!actuacionEncontrada) return res.status(400).json({msg: `Lo sentimos, la actuación con ID ${actuacion?.id} no se encuentra registrada`})      
+            actuaciones.map(async(actuacion)=>{
+                if(!mongoose.isValidObjectId(actuacion?.id)) return {
+                    code: 400,
+                    msg: "El formato del ID no es válido"}
+        
+
+                const actuacionEncontrada = await Actuaciones.findOne({curso: cursoEncontrado?._id, _id: actuacion?.id }).select("-createdAt -updatedAt -__v")
+                if(!actuacionEncontrada) return {
+                    code: 400,
+                    msg: `Lo sentimos, la actuación con ID ${actuacion?.id} no se encuentra registrada`
+                } 
+                
                 
                 const cantidadActuaciones = Number(actuacion.cantidad_actuaciones)
-                if(isNaN(cantidadActuaciones)) return res.status(400).json({ msg: "La cantidad de actuaciones debe ser un número válido" });
+                if(isNaN(cantidadActuaciones)) return {
+                    code: 400,
+                    msg: "La cantidad de actuaciones debe ser un número válido"
+                }
         
                 actuacionEncontrada.cantidad_actuaciones += cantidadActuaciones
         
@@ -131,6 +143,24 @@ const actualizarActuaciones = async(req, res) =>{
                 return actuacionEncontrada
             })
         )        
+
+        const actualizadas = actuacionesActualizadas.filter(act => !act.code)
+        const errores = actuacionesActualizadas.filter(act => act.code)
+
+        if(actuaciones.length === 1 && errores.length  === 1 ){
+            return res.status(errores[0].code).json({msg: errores[0].msg})
+        }
+
+        if(errores.length > 0){
+            return res.status(200).json({
+                msg: "Algunas actuaciones se han actualizado con éxito", 
+                actuaciones: {
+                    actualizadas,
+                    errores
+                }
+            })    
+        }
+
         res.status(200).json({msg: "Actuaciones actualizadas con éxito", actuaciones: actuacionesActualizadas})    
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
@@ -141,9 +171,9 @@ const actualizarActuaciones = async(req, res) =>{
 const eliminarActuacion = async(req, res) =>{
     const {id} = req.params
     try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos pero el id no es válido"})
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
         const actuacionEncontrada = await Actuaciones.findByIdAndDelete(id)
-        if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos pero la asistencia no se encuentra registrado"})
+        if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos, pero la asistencia no se encuentra registrada"})
         res.status(200).json(actuacionEncontrada)
         
     } catch (error) {
@@ -172,7 +202,6 @@ const visualizarReporte = async(req, res)=>{
 }
 
 export {
-    // crearActuacion,
     estudiantesPresentes,
     visualizarActuacion,
     visualizarActuaciones,
