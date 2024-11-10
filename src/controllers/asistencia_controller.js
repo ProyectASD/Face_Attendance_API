@@ -161,7 +161,7 @@ const visualizarReporte = async (req, res) => {
         const cursoEncontrado = await Cursos.findOne({ materia, paralelo, semestre })
         if (!cursoEncontrado) return res.status(404).json({ msg: "No se ha podido encontrar el curso." })
         
-        const asistencias = await Asistencia.find({ curso: cursoEncontrado._id }).populate("estudiante", "nombre apellido -_id")
+        const asistencias = await Asistencia.find({ curso: cursoEncontrado._id }).populate("estudiante", "nombre apellido _id")
         if (asistencias.length === 0) return res.status(400).json({ msg: "No se encontraron asistencias registradas" })
         
         // Si se proporciona una fecha, filtrar asistencias por esa fecha
