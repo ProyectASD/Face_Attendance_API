@@ -4,6 +4,8 @@ import crearToken from "../helpers/crearJWT.js"
 import Docentes from "../models/docentes.js"
 import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
+import Asistencias from "../models/asistencias.js"
+import Actuaciones from "../models/actuaciones.js"
 
 //Registrarse
 const registroDocente = async(req,res)=>{
@@ -224,6 +226,10 @@ const eliminarEstudiante = async(req, res) =>{
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
         const estudianteEncontrado = await Estudiantes.findByIdAndDelete(id)
         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
+        
+        await Asistencias.findOneAndDelete({estudiante: id})
+        await Actuaciones.findOneAndDelete({estudiante: id})
+        
         res.status(200).json({msg: "Estudiante eliminado con éxito"})
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   

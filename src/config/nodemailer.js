@@ -22,7 +22,7 @@ let enviarCorreo = (userMail, token) =>{
         to: userMail,
         subject: "Verificación de cuenta", 
         text: "Por favor verifica tu cuenta", 
-        html: `<a href="${process.env.URL_BACKEND}/docente/confirmar/${encodeURIComponent(token)}">Click aqui</a>` 
+        html: `<a href="${process.env.URL_FRONTEND}/confirmar/${encodeURIComponent(token)}">Click aqui</a>` 
     }
 
     transporter.sendMail(options, (err, info)=>{
@@ -42,7 +42,7 @@ let enviarCorreoRecuperarPassword = (userMail, token) =>{
         to: userMail,
         subject: "Recuperación de contraseña", 
         text: "Recuperación de contraseña", 
-        html: `<a href="${process.env.URL_BACKEND}/docente/recuperar-password/${encodeURIComponent(token)}">Click aqui</a>` 
+        html: `<a href="${process.env.URL_FRONTEND}/recuperar-password/${token}">Click aqui</a>` 
     }
     transporter.sendMail(options, (err, info)=>{
         if(err){
