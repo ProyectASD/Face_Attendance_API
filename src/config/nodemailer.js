@@ -65,7 +65,7 @@ let enviarCorreoEstudiante = (userMail, token) =>{
         to: userMail,
         subject: "Verificación de cuenta", 
         text: "Por favor verifica tu cuenta", 
-        html: `<a href="${process.env.URL_BACKEND}/estudiante/confirmar/${encodeURIComponent(token)}">Click aqui</a>` 
+        html: `Ingresa este token para confirmar tu correo: ${encodeURIComponent(token)}` 
     }
 
     transporter.sendMail(options, (err, info)=>{
@@ -85,7 +85,7 @@ let enviarCorreoRecuperarPasswordEstudiante = (userMail, token) =>{
         to: userMail,
         subject: "Recuperación de contraseña", 
         text: "Recuperación de contraseña", 
-        html: `<a href="${process.env.URL_BACKEND}/estudiante/recuperar-password/${encodeURIComponent(token)}">Click aqui</a>` 
+        html: `Ingresa este token para recuperar tu contraseña: ${encodeURIComponent(token)}` 
     }
     transporter.sendMail(options, (err, info)=>{
         if(err){
