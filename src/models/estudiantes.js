@@ -1,5 +1,6 @@
 import mongoose, { model, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 const estudianteSchema = new Schema({
     nombre: {
         type: String,
@@ -79,7 +80,8 @@ estudianteSchema.methods.matchPassword = async function (password) {
 }
 
 estudianteSchema.methods.createToken = async function (){
-    const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+    // const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+    const tokenGenerado = crypto.randomBytes(2).toString("hex")
     return tokenGenerado
 }
 
