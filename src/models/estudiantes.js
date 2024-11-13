@@ -81,7 +81,7 @@ estudianteSchema.methods.matchPassword = async function (password) {
 
 estudianteSchema.methods.createToken = async function (){
     // const tokenGenerado = this.token = Math.random().toString(36).slice(2)
-    const tokenGenerado = crypto.randomBytes(2).toString("hex")
+    const tokenGenerado = crypto.randomBytes(3).toString("hex")
     return tokenGenerado
 }
 

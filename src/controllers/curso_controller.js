@@ -54,17 +54,7 @@ import mongoose from "mongoose"
         try {
             if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
             if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
-            let cursoEncontrado
-            try {
-                cursoEncontrado = await Cursos.findByIdAndUpdate(id, req.body,{
-                    runValidators: true
-                })
-            } catch (error) {
-                //Validacion de campo unico
-                if(error.code === 11000) return res.status(404).json({msg: "Código ya existente. Elija uno diferente"}) 
-            }    
-
-            if(req.body?.codigo === cursoEncontrado.codigo) return res.status(404).json({msg: "Lo sentimos, el código ya existe. Inténtelo nuevamente"})
+            const cursoEncontrado = await Cursos.findByIdAndUpdate(id, req.body)
             if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el curso no se encuentra registrado"})
             await cursoEncontrado.save()
             res.status(200).json({msg: "Curso actualizado con éxito"})
