@@ -68,8 +68,15 @@ import mongoose from "mongoose"
         const {id} = req.params
         try {
             if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
-            const cursoEncontrado = await Cursos.findByIdAndDelete(id)
+            const cursoEncontrado = await Cursos.findById(id)
             if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el curso no se encuentra registrado"})
+            
+            if( cursoEncontrado?.estudiantes && cursoEncontrado?.estudiantes.length > 0) return res.status(404).json({
+                mgs: "Lo sentimos, pero no se ha podido eliminar el curso, ya que contiene información de estudiantes"
+            })
+            
+            await cursoEncontrado.deleteOne()
+
             res.status(200).json({msg: "Curso eliminado con éxito"})
         } catch (error) {
             res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   

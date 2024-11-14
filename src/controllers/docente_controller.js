@@ -222,14 +222,39 @@ const actualizarEstudiante = async(req, res) =>{
     //Eliminar estudiante
 const eliminarEstudiante = async(req, res) =>{
     const {id} = req.params
+    const {cursoId} = req.body
     try {
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
-        const estudianteEncontrado = await Estudiantes.findByIdAndDelete(id)
+        const estudianteEncontrado = await Estudiantes.findById(id)
         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
+
+        const cursoEncontrado = await Cursos.findOne({_id: cursoId})
         
-        await Asistencias.findOneAndDelete({estudiante: id})
-        await Actuaciones.findOneAndDelete({estudiante: id})
+        cursoEncontrado.estudiantes = cursoEncontrado.estudiantes.filter((estudiante)=> {
+            estudiante._id !== id
+        })    
+
+        const asistenciaEncontrada = await Asistencias.findOne({estudiante: estudianteEncontrado?.id, curso: cursoId})
+        const actuacionEncontrada = await Actuaciones.findOne({estudiante: estudianteEncontrado?.id, curso: cursoId})
         
+        if(asistenciaEncontrada?.cantidad_asistencias !== 0 &&
+            asistenciaEncontrada?.cantidad_presentes !== 0 && 
+            asistenciaEncontrada?.cantidad_ausencias !== 0 &&
+            asistenciaEncontrada?.fecha_asistencias?.length > 0 && 
+            asistenciaEncontrada?.estado_asistencias?.length > 0 &&
+            asistenciaEncontrada?.estado_asistencias &&
+            asistenciaEncontrada?.fecha_asistencias
+        ){ return res.status(404).json({msg: "Lo sentimos, pero no se ha podido eliminar el estudiante, ya que contiene información en asistencias"})}
+
+        if(actuacionEncontrada?.cantidad_actuaciones !== 0 &&
+            actuacionEncontrada?.descripciones?.length > 0 && 
+            actuacionEncontrada?.fecha_actuaciones?.length > 0 
+        ){ return res.status(404).json({msg: "Lo sentimos, pero no se ha podido eliminar el estudiante, ya que contiene información en actuaciones"})}
+
+        await asistenciaEncontrada.deleteOne()
+        await actuacionEncontrada.deleteOne()
+        await cursoEncontrado.save()
+
         res.status(200).json({msg: "Estudiante eliminado con éxito"})
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
