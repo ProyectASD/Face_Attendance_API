@@ -8,10 +8,10 @@ import mongoose from "mongoose"
         try {
             if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
             const cursoEncontrado = await Cursos.findOne({codigo})
-            if(cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el curso ya se encuentra registrado"})
+            if(cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el código del curso ya existe"})
     
             const cursoExistente = await Cursos.findOne({materia, paralelo, semestre})
-            if(cursoExistente) return res.status(404).json({msg: "Lo sentimos, pero este curso se encuentra registrado por otro docente"})
+            if(cursoExistente) return res.status(404).json({msg: "Lo sentimos, pero el curso ya se encuentra registrado"})
 
             const nuevoCurso = new Cursos(req.body)
             nuevoCurso.docente = req.docente._id
