@@ -4,12 +4,15 @@ import mongoose from "mongoose"
 //Gestionar cursos
     //Crear curso
     const crearCurso = async(req, res) =>{
-        const {codigo} = req.body
+        const {codigo, materia, paralelo, semestre} = req.body
         try {
             if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
             const cursoEncontrado = await Cursos.findOne({codigo})
             if(cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el curso ya se encuentra registrado"})
     
+            const cursoExistente = await Cursos.findOne({materia, paralelo, semestre})
+            if(cursoExistente) return res.status(404).json({msg: "Lo sentimos, pero este curso se encuentra registrado por otro docente"})
+
             const nuevoCurso = new Cursos(req.body)
             nuevoCurso.docente = req.docente._id
             await nuevoCurso.save()
