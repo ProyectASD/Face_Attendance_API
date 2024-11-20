@@ -222,14 +222,14 @@ const actualizarEstudiante = async(req, res) =>{
     //Eliminar estudiante
 const eliminarEstudiante = async(req, res) =>{
     const {id} = req.params
-    const {cursoId} = req.body
+    const {cid} = req.query
     try {
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
         const estudianteEncontrado = await Estudiantes.findById(id)
         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
-        if(!mongoose.Types.ObjectId.isValid(cursoId)) return res.status(404).json({msg: "Lo sentimos, pero el id del curso no es válido"})
-        const cursoEncontrado = await Cursos.findById(cursoId)
+        if(!mongoose.Types.ObjectId.isValid(cid)) return res.status(404).json({msg: "Lo sentimos, pero el id del curso no es válido"})
+        const cursoEncontrado = await Cursos.findById(cid)
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
 
@@ -240,8 +240,8 @@ const eliminarEstudiante = async(req, res) =>{
             !estudiante.equals(id)
         )    
 
-        const asistenciaEncontrada = await Asistencias.findOne({estudiante: id, curso: cursoId})
-        const actuacionEncontrada = await Actuaciones.findOne({estudiante: id, curso: cursoId})
+        const asistenciaEncontrada = await Asistencias.findOne({estudiante: id, curso: cid})
+        const actuacionEncontrada = await Actuaciones.findOne({estudiante: id, curso: cid})
         
         console.log(asistenciaEncontrada);
         console.log(asistenciaEncontrada?.estado_asistencias);
