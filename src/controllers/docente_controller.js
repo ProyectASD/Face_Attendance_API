@@ -228,31 +228,45 @@ const eliminarEstudiante = async(req, res) =>{
         const estudianteEncontrado = await Estudiantes.findById(id)
         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
-        const cursoEncontrado = await Cursos.findOne({_id: cursoId})
-        
-        cursoEncontrado.estudiantes = cursoEncontrado.estudiantes.filter((estudiante)=> {
-            estudiante._id !== id
-        })    
+        if(!mongoose.Types.ObjectId.isValid(cursoId)) return res.status(404).json({msg: "Lo sentimos, pero el id del curso no es válido"})
+        const cursoEncontrado = await Cursos.findById(cursoId)
+        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        const asistenciaEncontrada = await Asistencias.findOne({estudiante: estudianteEncontrado?.id, curso: cursoId})
-        const actuacionEncontrada = await Actuaciones.findOne({estudiante: estudianteEncontrado?.id, curso: cursoId})
+
+        if(!cursoEncontrado.estudiantes.some(estudiante => estudiante.equals(id))) return res.status(400).json({msg: "Lo sentimos, pero el estudiante no esta registrado en este curso"})
+
+
+        cursoEncontrado.estudiantes = cursoEncontrado.estudiantes.filter(estudiante => 
+            !estudiante.equals(id)
+        )    
+
+        const asistenciaEncontrada = await Asistencias.findOne({estudiante: id, curso: cursoId})
+        const actuacionEncontrada = await Actuaciones.findOne({estudiante: id, curso: cursoId})
         
-        if(asistenciaEncontrada?.cantidad_asistencias !== 0 &&
-            asistenciaEncontrada?.cantidad_presentes !== 0 && 
-            asistenciaEncontrada?.cantidad_ausencias !== 0 &&
-            asistenciaEncontrada?.fecha_asistencias?.length > 0 && 
-            asistenciaEncontrada?.estado_asistencias?.length > 0 &&
-            asistenciaEncontrada?.estado_asistencias &&
-            asistenciaEncontrada?.fecha_asistencias
+        console.log(asistenciaEncontrada);
+        console.log(asistenciaEncontrada?.estado_asistencias);
+        console.log(asistenciaEncontrada?.fecha_asistencias);
+
+        
+        if(asistenciaEncontrada && (
+            asistenciaEncontrada?.cantidad_asistencias !== 0 ||
+            asistenciaEncontrada?.cantidad_presentes !== 0 ||
+            asistenciaEncontrada?.cantidad_ausencias !== 0 ||
+            asistenciaEncontrada?.fecha_asistencias?.length > 0 || 
+            asistenciaEncontrada?.estado_asistencias?.length > 0 )
         ){ return res.status(404).json({msg: "Lo sentimos, pero no se ha podido eliminar el estudiante, ya que contiene información en asistencias"})}
 
-        if(actuacionEncontrada?.cantidad_actuaciones !== 0 &&
-            actuacionEncontrada?.descripciones?.length > 0 && 
-            actuacionEncontrada?.fecha_actuaciones?.length > 0 
+        console.log(actuacionEncontrada);
+        
+        if(actuacionEncontrada && (
+            actuacionEncontrada?.cantidad_actuaciones !== 0 ||
+            actuacionEncontrada?.descripciones?.length > 0 || 
+            actuacionEncontrada?.fecha_actuaciones?.length > 0) 
         ){ return res.status(404).json({msg: "Lo sentimos, pero no se ha podido eliminar el estudiante, ya que contiene información en actuaciones"})}
 
-        await asistenciaEncontrada.deleteOne()
-        await actuacionEncontrada.deleteOne()
+        if(asistenciaEncontrada) await asistenciaEncontrada.deleteOne()
+        if(actuacionEncontrada) await actuacionEncontrada.deleteOne()
+        
         await cursoEncontrado.save()
 
         res.status(200).json({msg: "Estudiante eliminado con éxito"})
@@ -265,22 +279,22 @@ const eliminarEstudiante = async(req, res) =>{
 //Gestionar datos personales estudiantes
 
 
-    //Actualizar datos personales - patch
-const actualizarDatosPersonalesEst = async(req, res) =>{
-    const {id} = req.params
-    //const {direccion, ciudad, telefono} = req.body
-    try {
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
-        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
-        const estudianteEncontrado = await Estudiantes.findByIdAndUpdate(id, req.body)
-        if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
+//     //Actualizar datos personales - patch
+// const actualizarDatosPersonalesEst = async(req, res) =>{
+//     const {id} = req.params
+//     //const {direccion, ciudad, telefono} = req.body
+//     try {
+//         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
+//         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+//         const estudianteEncontrado = await Estudiantes.findByIdAndUpdate(id, req.body)
+//         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
-        await estudianteEncontrado.save()
-        res.status(200).json({msg: "Datos del estudiante actualizados con éxito"})
-    } catch (error) {
-        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
-    }
-}
+//         await estudianteEncontrado.save()
+//         res.status(200).json({msg: "Datos del estudiante actualizados con éxito"})
+//     } catch (error) {
+//         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+//     }
+// }
 
 
 export { 
@@ -296,5 +310,5 @@ export {
     visualizarEstudiantes,
     actualizarEstudiante,
     eliminarEstudiante,
-    actualizarDatosPersonalesEst
+    // actualizarDatosPersonalesEst
 }

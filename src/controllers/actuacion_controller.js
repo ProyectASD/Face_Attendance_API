@@ -7,41 +7,51 @@ import actuaciones from "../models/actuaciones.js"
 //Gestionar Actuaciones
 
 //Visualizar estudiantes presentes
-const estudiantesPresentes = async(req, res)=>{
-    const {materia, paralelo, semestre} = req.body
-    try {
-        if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
-        const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
-        if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
+    const estudiantesPresentes = async(req, res)=>{
+        const {materia, paralelo, semestre} = req.body
+        try {
+            if(Object.values(req.body).includes("") || materia === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+            const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
+            if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        const asistenciaEstudiantes = await Asistencias.find({curso: cursoEncontrado?._id})
-        if(!asistenciaEstudiantes) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar la asistencia del estudiante"})
-        console.log(asistenciaEstudiantes)
+            const asistenciaEstudiantes = await Asistencias.find({curso: cursoEncontrado?._id})
+            if(!asistenciaEstudiantes) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar la asistencia del estudiante"})
+            console.log(asistenciaEstudiantes)
 
-        //Obtener ultimo elemento del arreglo estado de asistencias
+            //Obtener ultimo elemento del arreglo estado de asistencias
 
-        const estudiantesPresentesIds = asistenciaEstudiantes.filter((asistencia) =>{
-            let ultimoElemento = asistencia.estado_asistencias[asistencia.estado_asistencias.length - 1]
-            console.log(ultimoElemento)
-            return ultimoElemento === "presente"
-        }).map((asistencia) => asistencia.estudiante)
+            const estudiantesPresentes = asistenciaEstudiantes.filter((asistencia) =>{
+                let ultimoElemento = asistencia.estado_asistencias[asistencia.estado_asistencias.length - 1]
+                console.log(ultimoElemento)
+                return ultimoElemento === "presente"
+            }).map((asistencia) => ({
+                estudianteId: asistencia.estudiante,
+                fecha: asistencia.fecha_asistencias[asistencia.fecha_asistencias.length - 1]
+            }))
 
-        //Listar solo los que estudiantes que estan presentes
-        const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id, estudiante: { $in: estudiantesPresentesIds}}).populate("estudiante", "nombre apellido")
-        if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no existen estudiantes presentes"})      
-        
-        if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta actuación no existe"})      
-        
-        const informacionActuaciones = actuacionesEncontradas.map((actuacion) =>{
-            const{estudiante,cantidad_actuaciones} = actuacion
-            return {estudiante, cantidad_actuaciones}
-        })
+            const estudiantesPresentesIds =  estudiantesPresentes.map((id)=> id.estudianteId)
+            
 
-        res.status(200).json(informacionActuaciones)
-    } catch (error) {
-        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+            //Listar solo los que estudiantes que estan presentes
+            const actuacionesEncontradas = await Actuaciones.find({curso: cursoEncontrado?._id, estudiante: { $in: estudiantesPresentesIds}}).populate("estudiante", "nombre apellido")
+            if(actuacionesEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no existen estudiantes presentes"})      
+            
+            if(!actuacionesEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta actuación no existe"})      
+            
+            const informacionActuaciones = actuacionesEncontradas.map((actuacion) =>{
+                
+                const fechaEstudiante = estudiantesPresentes.find(
+                    (estudiante)=> estudiante.estudianteId.toString() === actuacion.estudiante._id.toString())?.fecha
+                console.log("ultimafecha: ", fechaEstudiante);                
+                const{estudiante,cantidad_actuaciones} = actuacion
+                return {estudiante, cantidad_actuaciones, fecha: fechaEstudiante}
+            })
+
+            res.status(200).json(informacionActuaciones)
+        } catch (error) {
+            res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
+        }
     }
-}
 
 
 
