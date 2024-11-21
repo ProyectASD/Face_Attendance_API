@@ -75,7 +75,7 @@ import mongoose from "mongoose"
             if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el curso no se encuentra registrado"})
             
             if( cursoEncontrado?.estudiantes && cursoEncontrado?.estudiantes.length > 0) return res.status(404).json({
-                mgs: "Lo sentimos, pero no se ha podido eliminar el curso, ya que contiene información de estudiantes"
+                msg: "Lo sentimos, pero no se ha podido eliminar el curso, ya que contiene información de estudiantes"
             })
             
             await cursoEncontrado.deleteOne()
