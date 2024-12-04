@@ -184,7 +184,7 @@ const eliminarActuacion = async(req, res) =>{
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
         const actuacionEncontrada = await Actuaciones.findByIdAndDelete(id)
         if(!actuacionEncontrada) return res.status(404).json({msg: "Lo sentimos, pero la asistencia no se encuentra registrada"})
-        res.status(200).json(actuacionEncontrada)
+        res.status(200).json({msg: "Actuación eliminada correctamente"})
         
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   

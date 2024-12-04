@@ -14,10 +14,6 @@ const cursoSchema = new Schema({
         type: String,
         require: true
     },
-    horario: {
-        type: String,
-        require: true
-    },
     semestre: {
         type: String, 
         require: true

@@ -101,8 +101,6 @@ const modificarPerfilEstudiante = async(req, res) =>{
         
         let estudiantePerfil = await Estudiantes.findByIdAndUpdate(id, req.body)
         if(!estudiantePerfil) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
-        
-        console.log(req.body)
 
         if(req.file){
         //Eliminar imagen existente de cloudinary
@@ -234,8 +232,8 @@ const visualizarCurso = async(req, res) =>{
         if(!cursosEncontrado || cursosEncontrado.length === 0) return res.status(404).json({msg: "No se encontraron cursos"})
 
         const informacionCursos = cursosEncontrado.map(curso =>{
-            const {codigo, paralelo, materia, semestre,horario, docente} = curso
-            return {codigo, paralelo, materia, semestre, horario,  docente}
+            const {codigo, paralelo, materia, semestre, docente} = curso
+            return {codigo, paralelo, materia, semestre,  docente}
         })
         
         res.status(200).json({

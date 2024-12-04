@@ -14,7 +14,6 @@ import {
     visualizarEstudiante,
     actualizarEstudiante,
     eliminarEstudiante,
-    // actualizarDatosPersonalesEst
 } from "../controllers/docente_controller.js"
 import autenticarDocente from "../middlewares/autenticacionDocente.js"
 
@@ -35,7 +34,6 @@ router.post("/visualizar/estudiantes", autenticarDocente , visualizarEstudiantes
 router.get("/visualizar/estudiante/:id", autenticarDocente, visualizarEstudiante)
 router.put("/actualizar/estudiante/:id", autenticarDocente, actualizarEstudiante)
 router.delete("/eliminar/estudiante/:id", autenticarDocente, eliminarEstudiante)
-// router.patch("/actualizar-datos-personales/estudiante/:id", autenticarDocente, actualizarDatosPersonalesEst)
 
 
 export default router

@@ -137,14 +137,16 @@ const reconocimientoFacial = async (req, res) => {
         }
 
         //Validación de carpeta temporal
-        const carpetaTemporal = path.join(__dirname, `../uploads/${req.body?.materia}-${req.body?.paralelo}`)
+        const carpetaTemporal = path.join(__dirname, `../uploads/${req.body?.materia}-${req.body?.paralelo}-${req.body?.semestre}`)
+        console.log(carpetaTemporal);
+        
         if(!fs.existsSync(carpetaTemporal)){
             return res.status(500).json({ msg: 'Error: La carpeta temporal no existe. Verifica la configuración del sistema.' });
         }
         
         
         //Iterar sobre las imágenes en la carpeta temporal
-        const archivos = fs.readFileSync(carpetaTemporal)
+        const archivos = fs.readdirSync(carpetaTemporal)
         let mejorCoincidencia = null
         
         for(const archivo of archivos){

@@ -2,7 +2,7 @@ import Asistencia from "../models/asistencias.js"
 import mongoose from "mongoose"
 import Estudiantes from "../models/estudiantes.js"
 import Cursos from "../models/cursos.js"
-import reconocimientoFacial from "./reconocimiento_facial.js"
+// import reconocimientoFacial from "./reconocimiento_facial.js"
 //import reconocimientoFacial from "./reconocimiento_facial.js"
 //import Actuaciones from "../models/actuaciones.js"
 //Gestionar asistencias
@@ -16,7 +16,7 @@ const visualizarAsistencias = async(req, res)=>{
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        const asistenciasEncontradas = await Asistencia.find({curso: cursoEncontrado?._id}).select("-createdAt -updatedAt -__v")
+        const asistenciasEncontradas = await Asistencia.find({curso: cursoEncontrado?._id}).select("-createdAt -updatedAt -__v").populate("estudiante", "nombre apellido email")
         console.log(asistenciasEncontradas)
         if(asistenciasEncontradas.length === 0) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron asistencias registradas con esa materia o paralelo"})
         if(!asistenciasEncontradas) return res.status(400).json({msg: "Lo sentimos, pero esta asistencia no existe"})      
@@ -197,7 +197,7 @@ const visualizarReporte = async (req, res) => {
         res.status(200).json(resultadoCompleto);
 
     } catch (error) {
-        res.status(500).json({ msg: `Hubo un problema con el servidor: ${error.message}` });
+        res.status(500).send({ msg: `Hubo un problema con el servidor: ${error.message}` });
     }
 };
 
