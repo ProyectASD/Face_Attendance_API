@@ -11,11 +11,11 @@ import cloudinary from "../config/cloudinary.js"
 const registroEstudiante = async(req,res)=>{
     const {email, password} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
-        // if(!email.includes("epn.edu.ec")) return res.status(404).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+        if(!email.includes("epn.edu.ec")) return res.status(400).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
         
         const emailEncontrado = await Estudiantes.findOne({email})
-        if(emailEncontrado) return res.status(404).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
+        if(emailEncontrado) return res.status(409).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
      
         const nuevoEstudiante = new Estudiantes(req.body)
         nuevoEstudiante.password = await nuevoEstudiante.encryptPassword(password)
@@ -40,7 +40,7 @@ const registroEstudiante = async(req,res)=>{
             await actualizarImgEstudiante.save()
 
             //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
-            res.status(200).json({msg: "Revise su correo para verificar su cuenta"})
+            res.status(201).json({msg: "Revise su correo para verificar su cuenta"})
         }).end(req.file.buffer)
 
     } catch (error) {
@@ -68,13 +68,13 @@ const confirmarEmailEstudiante = async(req,res)=>{
 const loginEstudiante = async(req, res)=>{    
     const {email, password} = req.body
     try {
-        if(Object.values(req.body).includes("") || email === undefined || password === undefined) return res.status(404).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || email === undefined || password === undefined) return res.status(400).json({msg: "Lo sentimos todos los campos deben de estar llenos"})
         const estudianteEncontrado = await Estudiantes.findOne({email})
-        if(estudianteEncontrado?.confirmEmail == false) return res.status(404).json({msg: "Lo sentimos, pero la cuenta no ha sido verificada"})
+        if(estudianteEncontrado?.confirmEmail == false) return res.status(403).json({msg: "Lo sentimos, pero la cuenta no ha sido verificada"})
         if(!estudianteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
 
         const confirmarPassword = await estudianteEncontrado.matchPassword(password)
-        if(!confirmarPassword) return res.status(404).json({msg: "Lo sentimos, pero la contraseña es incorrecta"})
+        if(!confirmarPassword) return res.status(401).json({msg: "Lo sentimos, pero la contraseña es incorrecta"})
 
         const token = crearToken(estudianteEncontrado.id, "estudiante")
         const {nombre, apellido, ciudad, direccion} = estudianteEncontrado

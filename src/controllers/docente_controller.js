@@ -11,12 +11,12 @@ import Actuaciones from "../models/actuaciones.js"
 const registroDocente = async(req,res)=>{
     const {email, password} = req.body
     try {
-        if(Object.values(req.body).includes("")) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         
-        // if(!email.includes("epn.edu.ec")) return res.status(404).json({msg: "Lo sentimos, pero el correo ingresado debe ser institucional"})
+        if(!email.includes("epn.edu.ec")) return res.status(400).json({msg: "Lo sentimos, pero el correo ingresado debe ser institucional"})
         
         const emailEncontrado = await Docentes.findOne({email})
-        if(emailEncontrado) return res.status(404).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
+        if(emailEncontrado) return res.status(409).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
 
         const nuevoDocente = new Docentes(req.body)
         nuevoDocente.password = await nuevoDocente?.encryptPassword(password)
@@ -25,7 +25,7 @@ const registroDocente = async(req,res)=>{
         enviarCorreo(nuevoDocente.email, token)
         await nuevoDocente?.save()
         
-        res.status(200).json({msg: "Revise su correo para verificar su cuenta"})
+        res.status(201).json({msg: "Revise su correo para verificar su cuenta"})
     } catch (error) {
         res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)   
     }
@@ -51,14 +51,14 @@ const confirmarEmailDocente = async(req,res)=>{
 const loginDocente = async(req, res)=>{
     const {email, password} = req.body
     try {
-        if(Object.values(req.body).includes("") || email === undefined || password === undefined) return res.status(404).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
+        if(Object.values(req.body).includes("") || email === undefined || password === undefined) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
          
         const docenteEncontrado = await Docentes.findOne({email})
-        if(docenteEncontrado?.confirmEmail == false) return res.status(404).json({msg: "Lo sentimos, pero la cuenta no ha sido verificada"})
+        if(docenteEncontrado?.confirmEmail == false) return res.status(403).json({msg: "Lo sentimos, pero la cuenta no ha sido verificada"})
         if(!docenteEncontrado) return res.status(404).json({msg: "Lo sentimos, pero el docente no se encuentra registrado"})
         
         const confirmarPassword = await docenteEncontrado.matchPassword(password)
-        if(!confirmarPassword) return res.status(404).json({msg: "Lo sentimos, pero la contraseña es incorrecta"})
+        if(!confirmarPassword) return res.status(401).json({msg: "Lo sentimos, pero la contraseña es incorrecta"})
 
         const token = crearToken(docenteEncontrado.id, "docente")
         const {id, nombre, apellido, ciudad, direccion} = docenteEncontrado

@@ -17,7 +17,7 @@ import upload from "../middlewares/multer.js"
 // router.post("/registro", autenticarDocente, crearAsistencia)
 router.post("/visualizar", autenticarDocente, visualizarAsistencias)
 router.get("/visualizar/:id", autenticarDocente, visualizarAsistencia)
-router.put("/actualizar", autenticarDocente, actualizarAsistencia) //FALTA DE TERMINAR
+router.put("/actualizar", autenticarDocente, actualizarAsistencia) 
 router.delete("/eliminar/:id", autenticarDocente, eliminarAsistencia)
 router.post("/reporte", autenticarDocente, visualizarReporte)
 
