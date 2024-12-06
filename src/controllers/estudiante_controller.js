@@ -25,7 +25,7 @@ const registroEstudiante = async(req,res)=>{
             await nuevoEstudiante?.save()
         } catch (error) {
             if (error.code === 11000) {
-                return res.status(400).json({ message: "Recuerde el número de cedula es único. Por favor, ingreselo nuevamente." });
+                return res.status(409).json({ message: "Recuerde el número de cedula es único. Por favor, ingreselo nuevamente." });
             }
         }
         
