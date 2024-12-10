@@ -12,6 +12,7 @@ import {
 import autenticarDocente from "../middlewares/autenticacionDocente.js"
 import reconocimientoFacial from "../controllers/reconocimiento_facial.js"
 import upload from "../middlewares/multer.js"
+// import agregarDescriptorAlArchivo from "../controllers/reconocimiento_facial.js"
 
 
 // router.post("/registro", autenticarDocente, crearAsistencia)

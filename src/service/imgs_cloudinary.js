@@ -2,7 +2,7 @@ import axios from "axios";
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url";
-
+import { agregarDescriptorAlArchivo } from "./funciones_reconocimiento.js";
 //Directorio temporal
 
 
@@ -34,6 +34,8 @@ const descargarImgCloudinary = async(url, nombreArchivo)=>{
     })
 }
 
+
+
 //Descargar las imagenes del estudiantes
 const descargarImgsEstudiantes = async(estudiantesURL, curso)=>{
     
@@ -42,15 +44,29 @@ const descargarImgsEstudiantes = async(estudiantesURL, curso)=>{
     
     directorioExiste(directorioDescarga)
 
-    const descargarPromesa = estudiantesURL.map((url, index)=>{
-        const nombreArchivo = path.join(directorioDescarga,`estudiante_${index}.jpg`)
-       
-        descargarImgCloudinary(url, nombreArchivo)
+    let imagen, descriptor 
+    const descargarPromesa = estudiantesURL.map((url)=>{
+        const nombreArchivo = path.join(directorioDescarga,`estudiante_${url.nombres}.jpg`)
+        imagen = url.nombres
+        descriptor = url.descriptor
+        descargarImgCloudinary(url.imagen, nombreArchivo)
     })
 
     await Promise.all(descargarPromesa)
+
+    // let crearJson = fs.createWriteStream("descriptoresEstudiantes.json")
+    // fs.createWriteStream("descriptoresEstudiantes.json")
+    // rutaDescriptores(curso)
+
+    // Ruta al archivo JSON que almacena los descriptores faciales
+    const rutaDescriptores = path.join(__dirname, `../uploads/${curso}/descriptoresEstudiantes.json`)
+    
+    await agregarDescriptorAlArchivo(imagen, descriptor, rutaDescriptores)
+    
     return directorioDescarga
 }
+
+// console.log("las imagenes descargadas afuera ",almacenarCurso);
 
 
 //Eliminar carpeta y su contenido

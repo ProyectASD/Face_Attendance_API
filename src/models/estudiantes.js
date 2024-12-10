@@ -33,6 +33,10 @@ const estudianteSchema = new Schema({
         require: true,
         default: false
     },
+    descriptor: {
+        type: [Number],
+        required: false
+    },
     fecha_nacimiento: {
         type: Date,
         require: true,

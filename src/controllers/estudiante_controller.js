@@ -6,13 +6,14 @@ import Cursos from "../models/cursos.js"
 import Asistencias from "../models/asistencias.js"
 import Actuaciones from "../models/actuaciones.js"
 import cloudinary from "../config/cloudinary.js"
+import {generarDescriptorFacial} from "../service/funciones_reconocimiento.js"
 
 //Registrarse
 const registroEstudiante = async(req,res)=>{
     const {email, password} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
-        if(!email.includes("epn.edu.ec")) return res.status(400).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
+        // if(!email.includes("epn.edu.ec")) return res.status(400).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
         
         const emailEncontrado = await Estudiantes.findOne({email})
         if(emailEncontrado) return res.status(409).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
@@ -39,9 +40,17 @@ const registroEstudiante = async(req,res)=>{
             if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
             await actualizarImgEstudiante.save()
 
+            const estudiante = await Estudiantes.findById(nuevoEstudiante?._id)
+            console.log(estudiante);
+            
+            const descriptor = await generarDescriptorFacial(estudiante?.fotografia)
+            estudiante.descriptor = descriptor 
+            await estudiante.save()
+    
             //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
-            res.status(201).json({msg: "Revise su correo para verificar su cuenta"})
         }).end(req.file.buffer)
+        
+        res.status(201).json({msg: "Revise su correo para verificar su cuenta"})
 
     } catch (error) {
        res.status(500).send(`Hubo un problema con el servidor - Error ${error.message}`)       

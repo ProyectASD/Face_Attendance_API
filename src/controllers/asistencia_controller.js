@@ -28,7 +28,12 @@ const visualizarAsistencias = async(req, res)=>{
             try {                
                 const estudianteEncontrado = await Estudiantes.findById(estudianteId.toString())              
                 if(estudianteEncontrado?.fotografia){
-                    estudiantesURLS.push(estudianteEncontrado?.fotografia)
+                    estudiantesURLS.push({
+                        imagen: estudianteEncontrado?.fotografia, 
+                        descriptor: estudianteEncontrado?.descriptor,
+                        nombres:`${estudianteEncontrado?.nombre} ${estudianteEncontrado?.apellido}`
+                    })
+
                 }
             } catch (error) {
                 console.error(`Error al encontrar el ID del estudiante ${estudianteId}: ${error.message}`)
@@ -39,8 +44,8 @@ const visualizarAsistencias = async(req, res)=>{
 
         console.log("LAS URLS son: ",estudiantesURLS)
 
-
-        await descargarImgsEstudiantes(estudiantesURLS, `${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}-${cursoEncontrado?.semestre}`)
+        const nombreCurso = `${cursoEncontrado?.materia}-${cursoEncontrado?.paralelo}-${cursoEncontrado?.semestre}`
+        await descargarImgsEstudiantes(estudiantesURLS, nombreCurso)
 
         res.status(200).json(asistenciasEncontradas)
     } catch (error) {
