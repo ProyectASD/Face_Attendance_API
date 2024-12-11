@@ -14,6 +14,16 @@ dotenv.config()
 //Configuraciones
 app.use(cors())
 app.set("port", process.env.PORT || 3000)
+// Configurar CORS para producción
+const corsOptions = {
+    origin: 'https://faceattendanceia.netlify.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}
+app.use(cors(corsOptions))
+
+// Manejar preflight para todas las rutas
+app.options('*', cors(corsOptions))
 
 //Middlewares
 app.use(express.json())

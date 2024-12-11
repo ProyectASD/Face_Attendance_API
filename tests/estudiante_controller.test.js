@@ -19,7 +19,9 @@ import Actuaciones from "../src/models/actuaciones.js"
 import Asistencias from "../src/models/asistencias.js"
 import * as funcionesReconocimiento  from "../src/service/funciones_reconocimiento.js"
 import {generarDescriptorFacial} from "../src/service/funciones_reconocimiento.js"
+import { enviarCorreoEstudiante } from "../src/config/nodemailer.js"
 
+jest.mock("../src/config/nodemailer.js")
 jest.mock("../src/config/cloudinary")
 jest.mock("../src/config/nodemailer")
 jest.mock("../src/models/estudiantes")
@@ -142,35 +144,42 @@ afterEach(()=>{
 })
 
 test("Debería registrar un estudiante", async () => {
-    Estudiantes.findOne.mockResolvedValue(null)
+    Estudiantes.findOne.mockResolvedValue(null);
+
     Estudiantes.findByIdAndUpdate.mockResolvedValue({
         _id: "id-mock",
-        descriptor: [0.1, 0.2, 0.3, 0.4],
+        fotografia: "https://cloudinary.com/imagen",
+        descriptor: undefined,
+        save: jest.fn().mockResolvedValue({}),
+    });
+
+    Estudiantes.findById.mockResolvedValue({
+        _id: "id-mock",
+        descriptor:[0.1, 0.2, 0.3, 0.4],
         save: jest.fn().mockResolvedValue({})
     })
 
-    // Simular la carga de una imagen en Cloudinary con un retraso de 5 segundos.
     cloudinary.uploader.upload_stream.mockImplementation((options, callback) => {
-        return new Promise((resolve)=>{
-            setTimeout(() => {
-                // Simula que Cloudinary devuelve la URL de la imagen después de 5 segundos.
-                callback(null, { secure_url: 'https://cloudinary.com/testimage.jpg' ,
-
-                });
-                resolve()
-            }); 
-            return { end: jest.fn() }
-        })
+        callback(null, { secure_url: "https://cloudinary.com/imagen" });
+        return {end: jest.fn()}
     });
-    await sleep(5000)
-    await generarDescriptorFacial.mockResolvedValue([0.1, 0.2, 0.3, 0.4]);
 
+    enviarCorreoEstudiante.mockImplementation()
+    generarDescriptorFacial.mockImplementation((imagePath)=>{
+        return {imagePath: jest.fn()}
+    })
+    await registroEstudiante(req, res);
 
-    const registroEstudianteHandler = (req, res) => 
-        registroEstudiante(req, res, { Estudiantes: mockEstudiantes, enviarCorreoEstudiante: mockEnviarCorreo });
+    console.log(res.json.mock);
     
-    await registroEstudianteHandler(req, res);
+    expect(Estudiantes.prototype.encryptPassword).toHaveBeenCalledWith("12345");
+    // expect(Estudiantes.prototype.createToken).toHaveBeenCalled();
+    expect(Estudiantes.prototype.save).toHaveBeenCalled();
+    // expect(enviarCorreoEstudiante).toHaveBeenCalledWith();
     expect(cloudinary.uploader.upload_stream).toHaveBeenCalled();
+    // expect(generarDescriptorFacial).toHaveBeenCalledWith();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({ msg: "Revise su correo para verificar su cuenta" });
 });
 
 
