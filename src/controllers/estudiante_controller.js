@@ -41,9 +41,9 @@ const registroEstudiante = async(req,res)=>{
             await actualizarImgEstudiante.save()
 
             const estudiante = await Estudiantes.findById(nuevoEstudiante?._id)
-            console.log(estudiante);
             
             const descriptor = await generarDescriptorFacial(estudiante?.fotografia)
+            if(!descriptor) return res.status(422).json({msg: "La imagen proporcionada no contiene un rostro válido"})
             estudiante.descriptor = descriptor 
             await estudiante.save()
     

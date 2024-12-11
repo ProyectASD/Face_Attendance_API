@@ -76,8 +76,9 @@ const actualizarAsistencia = async(req, res)=>{
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
 
-        //MEJORAR ESTO
-        
+        // const fechaExistente = await Asistencia.findOne({curso: cursoEncontrado?._id, fecha_asistencias: { $in: [fecha] }})
+        // if (fechaExistente) return res.status(400).json({ msg: "La fecha ya ha sido registrada el día de hoy" })
+    
         const asistenciasActualizadas = await Promise.all(
             estudiantes.map(async(asistencia)=>{
                 // const actuacionEncontrada = await Actua

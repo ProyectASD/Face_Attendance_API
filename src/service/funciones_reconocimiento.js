@@ -5,8 +5,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import axios from 'axios'
 
+const testEnvironment = process.env.NODE_ENV === "test"
+
 // Obtener el directorio actual del archivo
-const __filename = fileURLToPath(import.meta.url)
+const __filename = testEnvironment ? 'fake-path/to/file.js' :  fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Configurar el entorno de face-api.js con canvas
@@ -38,13 +40,6 @@ const cargarImagen = async (imagePath) => {
     }
 
 }
-
-
-
-
-
-
-// const rutaDescriptores = path.join(__dirname, `../uploads/${getAlmacenarCurso()}/descriptoresEstudiantes.json`)
 
 
 // Función para generar el descriptor facial de una imagen

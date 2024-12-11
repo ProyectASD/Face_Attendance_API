@@ -45,24 +45,17 @@ const descargarImgsEstudiantes = async(estudiantesURL, curso)=>{
     directorioExiste(directorioDescarga)
 
     let imagen, descriptor 
-    const descargarPromesa = estudiantesURL.map((url)=>{
+    const descargarPromesa = estudiantesURL.map(async(url)=>{
         const nombreArchivo = path.join(directorioDescarga,`estudiante_${url.nombres}.jpg`)
         imagen = url.nombres
         descriptor = url.descriptor
         descargarImgCloudinary(url.imagen, nombreArchivo)
+        // Ruta al archivo JSON que almacena los descriptores faciales
+        const rutaDescriptores = path.join(__dirname, `../uploads/${curso}/descriptoresEstudiantes.json`)
+        await agregarDescriptorAlArchivo(imagen, descriptor, rutaDescriptores) 
     })
 
-    await Promise.all(descargarPromesa)
-
-    // let crearJson = fs.createWriteStream("descriptoresEstudiantes.json")
-    // fs.createWriteStream("descriptoresEstudiantes.json")
-    // rutaDescriptores(curso)
-
-    // Ruta al archivo JSON que almacena los descriptores faciales
-    const rutaDescriptores = path.join(__dirname, `../uploads/${curso}/descriptoresEstudiantes.json`)
-    
-    await agregarDescriptorAlArchivo(imagen, descriptor, rutaDescriptores)
-    
+    await Promise.all(descargarPromesa)    
     return directorioDescarga
 }
 

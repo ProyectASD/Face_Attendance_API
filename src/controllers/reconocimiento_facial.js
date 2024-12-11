@@ -19,6 +19,7 @@ const reconocimientoFacial = async (req, res) => {
         const detecciones = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
 
         if (!detecciones) {
+            fs.unlinkSync(imagePath)
             return res.status(404).json({ msg: 'No se detectó ningún rostro' });
         }
 
@@ -55,16 +56,15 @@ const reconocimientoFacial = async (req, res) => {
 
         // Crear un FaceMatcher con los descriptores guardados y el umbral de coincidencia
         const faceMatcher = new faceapi.FaceMatcher(descriptoresGuardados, 0.5); // Umbral ajustable
-        console.log("perro veneco: ",faceMatcher);
         
         const coincidencia = faceMatcher.findBestMatch(detecciones.descriptor);
         
         // Eliminar la imagen temporal después del reconocimiento
-        fs.unlinkSync(imagePath);
+        fs.unlinkSync(imagePath)
 
         if (coincidencia.label !== 'unknown' && coincidencia.distance <= 0.5) {
             console.log("Si se reconoció la imagen", coincidencia);
-            return res.status(200).json({ msg: 'Persona reconocida', coincidencia: coincidencia.toString()});
+            return res.status(200).json({ msg: 'Persona reconocida', coincidencia: coincidencia.label.toString(), distancia: coincidencia.distance.toString()})
         } else {
             return res.status(404).json({ msg: 'Rostro no reconocido' });
         }
