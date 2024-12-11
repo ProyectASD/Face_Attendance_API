@@ -212,6 +212,7 @@ describe("Pruebas Unitarias - Gestionamiento de asistencias - Docentes",()=>{
           materia: "materia de prueba",
           semestre: "2024-prueba",
           estudiantes: [id_estudiante],
+          fecha_asistencias: {$in: ["01/12/2024"]}
         });
     
         req.body.estudiantes = [{
@@ -231,7 +232,9 @@ describe("Pruebas Unitarias - Gestionamiento de asistencias - Docentes",()=>{
           save: save_function
         });
         await actualizarAsistencia(req, res);
+        console.log(res.json.mock);
         
+
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
             msg: "Asistencias registradas con éxito",

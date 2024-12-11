@@ -45,7 +45,7 @@ describe("Pruebas Unitarias - Usuarios - Docentes", ()=>{
                 apellido: "datos-prueba",
                 ciudad: "datos-prueba",
                 direccion: "datos-prueba",
-                email: "docente@hotmail.com",
+                email: "docente@epn.edu.ec",
                 password: "12345",
                 confirmEmail: true, // Suponemos que el docente ha confirmado su correo
                 confirmarPassword: "12345",
@@ -88,7 +88,7 @@ describe("Pruebas Unitarias - Usuarios - Docentes", ()=>{
         const registroDocenteHandler = (req, res) => registroDocente(req, res, {enviarCorreo: mockEnviarCorreo });
         await registroDocenteHandler(req, res);
                 
-        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.status).toHaveBeenCalledWith(201)
         expect(res.json).toHaveBeenCalledWith({msg: "Revise su correo para verificar su cuenta"})
     })
 
@@ -110,11 +110,11 @@ describe("Pruebas Unitarias - Usuarios - Docentes", ()=>{
             apellido: "datos-prueba",
             ciudad: "datos-prueba",
             direccion: "datos-prueba",
-            email: "docente@hotmail.com",
+            email: "docente@epn.edu.ec",
             token: "token_simulado", // El token que hemos simulado
           });
       
-          expect(Docentes.findOne).toHaveBeenCalledWith({ email: "docente@hotmail.com" });
+          expect(Docentes.findOne).toHaveBeenCalledWith({ email: "docente@epn.edu.ec" });
           expect(req.body.matchPassword).toHaveBeenCalledWith("12345");
     })
 
@@ -201,7 +201,7 @@ describe("Pruebas Unitarias - Gestionamiento de estudiantes - Docentes",()=>{
             cedula: "1234567890",
             ciudad: "Quito",
             direccion: "Av. Siempre Viva",
-            email: "juan.perez@hotmail.com",
+            email: "juan.perez@epn.edu.ec",
             fotografia: "imagen.jpg"
         });
     
@@ -216,7 +216,7 @@ describe("Pruebas Unitarias - Gestionamiento de estudiantes - Docentes",()=>{
             cedula: "1234567890",
             ciudad: "Quito",
             direccion: "Av. Siempre Viva",
-            email: "juan.perez@hotmail.com",
+            email: "juan.perez@epn.edu.ec",
             fotografia: "imagen.jpg"
         });
     });
