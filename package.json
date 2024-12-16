@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon ./src/index.js",
-    "start": "nodem ./src/index.js",
+    "start": "node ./src/index.js",
     "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --verbose"
   },
   "keywords": [],
