@@ -142,6 +142,7 @@ const visualizarPerfilEstudiante = async (req, res) =>{
     delete req.estudiante.token
     delete req.estudiante.status
     delete req.estudiante.__v
+    delete req.estudiante.descriptor
     //delete req.estudiante._id
     //delete req.estudiante.password
 

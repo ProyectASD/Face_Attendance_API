@@ -214,6 +214,7 @@ describe("Pruebas Unitarias - Gestionamiento de asistencias - Docentes",()=>{
           estudiantes: [id_estudiante],
           fecha_asistencias: {$in: ["01/12/2024"]}
         });
+        Asistencias.findOne.mockResolvedValueOnce(null)
     
         req.body.estudiantes = [{
             estudianteId:  new mongoose.Types.ObjectId().toString(),
