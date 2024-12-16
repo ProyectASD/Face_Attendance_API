@@ -181,7 +181,7 @@ const visualizarEstudiantes = async(req, res) =>{
         const cursoEncontrado = await Cursos.findOne({materia: materia, paralelo: paralelo, semestre: semestre})
         if(!cursoEncontrado) return res.status(404).json({msg: "Lo sentimos, pero no se ha podido encontrar el curso"})
         
-        const estudiantesEncontrado = await Estudiantes.find({_id: {$in: cursoEncontrado?.estudiantes}}).select("-createdAt -updatedAt -__v -descriptor")
+        const estudiantesEncontrado = await Estudiantes.find({_id: {$in: cursoEncontrado?.estudiantes}}).select("-createdAt -updatedAt -__v -descriptor -token -confirmEmail")
         if(estudiantesEncontrado.length === 0 || !estudiantesEncontrado) return res.status(400).json({msg: "Lo sentimos, pero no se encuentraron estudiantes registrados"})
         res.status(200).json(estudiantesEncontrado)
     } catch (error) {
@@ -195,7 +195,7 @@ const visualizarEstudiante = async(req, res) =>{
     const {id} = req.params
     try {
         if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({msg: "Lo sentimos, pero el id no es válido"})
-        const estudianteEncontrado = await Estudiantes.findById(id).select("-createdAt -updatedAt -__v -descriptor")
+        const estudianteEncontrado = await Estudiantes.findById(id).select("-createdAt -updatedAt -__v -descriptor -token -confirmEmail")
         if(!estudianteEncontrado) return res.status(400).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
         res.status(200).json(estudianteEncontrado)
     } catch (error) {
