@@ -194,18 +194,21 @@ describe("Pruebas Unitarias - Gestionamiento de estudiantes - Docentes",()=>{
     })
     
     test("Debería visualizar un estudiante", async () => {
-        Estudiantes.findById.mockResolvedValue({
-            _id: req.params.id,
-            nombre: "Juan",
-            apellido: "Pérez",
-            cedula: "1234567890",
-            ciudad: "Quito",
-            direccion: "Av. Siempre Viva",
-            email: "juan.perez@epn.edu.ec",
-            fotografia: "imagen.jpg"
-        });
+        Estudiantes.findById.mockImplementation(()=>({
+            select: jest.fn().mockResolvedValue({
+                _id: req.params.id,
+                nombre: "Juan",
+                apellido: "Pérez",
+                cedula: "1234567890",
+                ciudad: "Quito",
+                direccion: "Av. Siempre Viva",
+                email: "juan.perez@epn.edu.ec",
+                fotografia: "imagen.jpg"
+            })
+        }));
     
         await visualizarEstudiante(req, res);
+        console.log(res.send.mock);
     
         expect(Estudiantes.findById).toHaveBeenCalledWith(req.params.id);
         expect(res.status).toHaveBeenCalledWith(200);
@@ -234,31 +237,34 @@ describe("Pruebas Unitarias - Gestionamiento de estudiantes - Docentes",()=>{
 
         let id_simulado = new mongoose.Types.ObjectId().toString()
 
-        Estudiantes.find.mockResolvedValue([{
-            _id: id_simulado,
-            nombre : "datos-prueba",
-            apellido: "datos-prueba",
-            cedula : "1234567890",
-            ciudad: "datos-prueba",
-            direccion: "datos-prueba",
-            email: "estudiantes@hotmail.com",
-            password: "12345",
-            fotografia: "imagen.jpg"
-            },
-            {
+        Estudiantes.find.mockImplementation(()=>({
+            select: jest.fn().mockResolvedValue([{
                 _id: id_simulado,
-                nombre : "datos-prueba2",
-                apellido: "datos-prueba2",
-                cedula : "1234567891",
-                ciudad: "datos-prueba2",
-                direccion: "datos-prueba2",
-                email: "estudiantes2@hotmail.com",
+                nombre : "datos-prueba",
+                apellido: "datos-prueba",
+                cedula : "1234567890",
+                ciudad: "datos-prueba",
+                direccion: "datos-prueba",
+                email: "estudiantes@hotmail.com",
                 password: "12345",
-                fotografia: "imagen2.jpg"
-            }
-        ])
+                fotografia: "imagen.jpg"
+                },
+                {
+                    _id: id_simulado,
+                    nombre : "datos-prueba2",
+                    apellido: "datos-prueba2",
+                    cedula : "1234567891",
+                    ciudad: "datos-prueba2",
+                    direccion: "datos-prueba2",
+                    email: "estudiantes2@hotmail.com",
+                    password: "12345",
+                    fotografia: "imagen2.jpg"
+                }
+            ])
+        }))
 
         await visualizarEstudiantes(req, res)
+        console.log(res.send.mock);
 
         expect(res.status).toHaveBeenCalledWith(200)        
         expect(res.json).toHaveBeenCalledWith([{

@@ -7,7 +7,8 @@ import {
     visualizarActuaciones, 
     visualizarAsistencias, 
     ingresarCodigo,
-    nuevaPasswordEstudiante
+    nuevaPasswordEstudiante,
+    visualizarPerfilEstudiante
 } from "../src/controllers/estudiante_controller.js"
 import cloudinary from "../src/config/cloudinary.js"
 import Estudiantes from "../src/models/estudiantes.js"
@@ -231,6 +232,36 @@ test("Deberia modificar perfil - estudiante", async()=>{
     expect(res.json).toHaveBeenCalledWith({ msg: 'Perfil modificado con éxito' })
     expect(cloudinary.uploader.upload_stream).toHaveBeenCalled();
 
+})
+
+test("Deberia visualizar el perfil - estudiante", async()=>{
+    req.estudiante = {
+        id: "123",
+        nombre : "datos-prueba",
+        apellido: "datos-prueba",
+        ciudad: "datos-prueba",
+        direccion: "datos-prueba",
+        email: "estudiante@epn.edu.ec",
+        password: "12345",
+        telefono: "12345",
+        fotografia: "https:enlace-prueba.com"
+    }
+    
+    await visualizarPerfilEstudiante(req, res)
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(
+        {
+            id: "123",
+            nombre : "datos-prueba",
+            apellido: "datos-prueba",
+            ciudad: "datos-prueba",
+            direccion: "datos-prueba",
+            email: "estudiante@epn.edu.ec",
+            password: "12345",
+            telefono: "12345",
+            fotografia: "https:enlace-prueba.com"
+        }
+    )
 })
 
 
@@ -500,10 +531,4 @@ describe("Pruebas Unitarias - Visualización de Asistencias - Estudiante", () =>
         )
     })
 
-
-
-
-
-
 })
-
