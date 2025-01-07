@@ -27,28 +27,29 @@ const loadModels = async () => {
 }
 
 // Función para cargar la imagen
-const cargarImagen = async (imagePath) => {
-    try {
-        console.log(imagePath)
-        const response = await axios.get(imagePath, {responseType: "arraybuffer"})
-        const buffer = Buffer.from(response.data)
-        const img = await canvas.loadImage(buffer);
-        return img;
-    } catch (error) {
-        console.error("Error cargando la imagen:", error.message);
-        throw error;
-    }
-
-}
+// const cargarImagen = async (imagePath) => {
+//     try {
+//         console.log(imagePath)
+//         const response = await axios.get(imagePath, {responseType: "arraybuffer"})
+//         const buffer = Buffer.from(response.data)
+//         const img = await canvas.loadImage(buffer);
+//         return img;
+//     } catch (error) {
+//         console.error("Error cargando la imagen:", error.message);
+//         throw error;
+//     }
+// }
 
 
 // Función para generar el descriptor facial de una imagen
-const generarDescriptorFacial = async (imagePath) => {
-    const img = await cargarImagen(imagePath)
+const generarDescriptorFacial = async (buffer) => {
+    const img = new Image()
+    img.src = buffer
+
     const deteccion = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
 
     if (!deteccion) {
-        throw new Error('No se detectó ningún rostro en la imagen.');
+        throw new Error('No se detectó ningún rostro en la imagen.')
     }
     const descriptor = Array.from(deteccion.descriptor)
     console.log('Descriptor facial generado:', descriptor)
@@ -75,10 +76,6 @@ const guardarDescriptores = (descriptores, rutaDescriptores) => {
 // Función para agregar un nuevo descriptor al archivo JSON
 const agregarDescriptorAlArchivo = async (archivo, descriptor, curso) => {
     try {            
-    // Ejemplo de uso para agregar un descriptor de una imagen
-        // const imagePath = 'C:/TESIS BACKEND/src/uploads/Programación-GR1-2024-B/estudiante_6.jpg'; // Cambia la ruta a la imagen que quieras procesar
-        // const descriptor = await generarDescriptorFacial(imagePath)
-        
         // Leer los descriptores existentes
         const descriptores = leerDescriptores(curso)
         // Agregar el nuevo descriptor a la lista de descriptores

@@ -8,13 +8,25 @@ import Actuaciones from "../models/actuaciones.js"
 import cloudinary from "../config/cloudinary.js"
 import {generarDescriptorFacial} from "../service/funciones_reconocimiento.js"
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 //Registrarse
 const registroEstudiante = async(req,res)=>{
     const {email, password} = req.body
     try {
         if(Object.values(req.body).includes("")) return res.status(400).json({msg: "Lo sentimos, todos los campos deben de estar llenos"})
         // if(!email.includes("epn.edu.ec")) return res.status(400).json({msg: "Lo sentimos pero el correo ingresado debe ser institucional"})
-        
+                
+        let descriptor
+        try {
+            descriptor = await generarDescriptorFacial(req?.file?.buffer)
+        } catch (error) {
+            console.error(error)
+            return res.status(422).json({msg: "La imagen proporcionada no contiene un rostro válido"})
+        }
+
         const emailEncontrado = await Estudiantes.findOne({email})
         if(emailEncontrado) return res.status(409).json({msg: "Lo sentimos, pero este email ya se encuentra registrado"})
      
@@ -30,26 +42,23 @@ const registroEstudiante = async(req,res)=>{
             }
         }
         
-        enviarCorreoEstudiante(nuevoEstudiante.email, token)
-
         //Subir imagen a cloudinary
         cloudinary.uploader.upload_stream({public_id: nuevoEstudiante?._id}, async(err, resultado)=>{
             if(err) return res.status(500).send(`Hubo un problema al subir la imagen ${err.message}`)       
+                
+                const actualizarImgEstudiante = await Estudiantes.findByIdAndUpdate(nuevoEstudiante?._id,{fotografia: resultado.secure_url})
+                if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
+                    await actualizarImgEstudiante.save()
+                
+                const estudiante = await Estudiantes.findById(nuevoEstudiante?._id)
+                
+                estudiante.descriptor = descriptor 
+                await estudiante.save()
+                
+                //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
+            }).end(req.file.buffer)
             
-            const actualizarImgEstudiante = await Estudiantes.findByIdAndUpdate(nuevoEstudiante?._id,{fotografia: resultado.secure_url})
-            if(!actualizarImgEstudiante) return res.status(404).json({msg: "Lo sentimos, pero el estudiante no se encuentra registrado"})
-            await actualizarImgEstudiante.save()
-
-            const estudiante = await Estudiantes.findById(nuevoEstudiante?._id)
-            
-            const descriptor = await generarDescriptorFacial(estudiante?.fotografia)
-            // if(!descriptor) return res.status(422).json({msg: "La imagen proporcionada no contiene un rostro válido"})
-            estudiante.descriptor = descriptor 
-            await estudiante.save()
-    
-            //res.status(200).json({ message: 'Imagen subida y asociada correctamente', imageUrl: actualizarImgEstudiante?.fotografia })
-        }).end(req.file.buffer)
-        
+        enviarCorreoEstudiante(nuevoEstudiante.email, token)
         res.status(201).json({msg: "Revise su correo para verificar su cuenta"})
 
     } catch (error) {
