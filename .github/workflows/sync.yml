@@ -1,0 +1,45 @@
+name: Sync Repo with Upstream
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Ejecuta la sincronización todos los días a medianoche
+  workflow_dispatch: # Permite correr manualmente el workflow
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream repository
+        run: |
+          git remote add upstream https://github.com/StevenCast/Backend_asistencias.git
+          git fetch upstream
+
+      - name: Merge changes from upstream
+        run: |
+          git checkout main
+          git merge upstream/main
+
+      - name: Commit and push changes if any
+        run: |
+          git checkout main
+          git add .
+          if [ "$(git status --porcelain)" != "" ]; then
+            git commit -m "Sync changes from upstream"
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
+          else
+            echo "No changes to commit"
+          fi
