@@ -19,6 +19,9 @@ app.set("port", process.env.PORT || 3000)
 app.use(express.json())
 
 //Rutas
+app.get("/", (req, res)=>{
+  res.send("Server On")
+})
 app.use("/api/docente", routerDocente)
 app.use("/api/estudiante", routerEstudiante)
 app.use("/api/curso", routerCurso)
